@@ -22,3 +22,4 @@ global using Hrevolve.Application;
 // 共享层
 global using Hrevolve.Shared.Identity;
 global using Hrevolve.Shared.MultiTenancy;
+

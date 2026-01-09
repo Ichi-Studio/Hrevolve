@@ -46,13 +46,39 @@ public class AttendanceController(IMediator mediator) : ControllerBase
     /// <summary>
     /// 补卡申请
     /// </summary>
-    [HttpPost("manual-check")]
-    public async Task<IActionResult> ManualCheck(
-        [FromBody] ManualCheckRequest request,
+    [HttpPost("correction")]
+    public async Task<IActionResult> ApplyCorrection(
+        [FromBody] CorrectionRequest request,
         CancellationToken cancellationToken)
     {
         // TODO: 实现补卡命令
         return Ok(new { message = "补卡申请已提交" });
+    }
+    
+    /// <summary>
+    /// 获取考勤记录列表（管理员）
+    /// </summary>
+    [HttpGet("records")]
+    [RequirePermission(Permissions.AttendanceRead)]
+    public async Task<IActionResult> GetAttendanceRecords(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] Guid? employeeId = null,
+        [FromQuery] Guid? departmentId = null,
+        [FromQuery] DateOnly? startDate = null,
+        [FromQuery] DateOnly? endDate = null,
+        [FromQuery] string? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: 实现获取考勤记录列表查询
+        return Ok(new 
+        { 
+            message = "获取考勤记录列表功能待实现",
+            items = Array.Empty<object>(),
+            total = 0,
+            page,
+            pageSize
+        });
     }
     
     /// <summary>
@@ -81,6 +107,39 @@ public class AttendanceController(IMediator mediator) : ControllerBase
     }
     
     /// <summary>
+    /// 获取月度考勤统计
+    /// </summary>
+    [HttpGet("stats/monthly")]
+    public async Task<IActionResult> GetMonthlyStats(
+        [FromQuery] int year,
+        [FromQuery] int month,
+        CancellationToken cancellationToken)
+    {
+        // TODO: 实现获取月度考勤统计查询
+        return Ok(new 
+        { 
+            workDays = 0,
+            attendedDays = 0,
+            lateDays = 0,
+            earlyLeaveDays = 0,
+            absentDays = 0,
+            leaveDays = 0,
+            overtimeHours = 0
+        });
+    }
+    
+    /// <summary>
+    /// 获取班次列表
+    /// </summary>
+    [HttpGet("shifts")]
+    [RequirePermission(Permissions.AttendanceRead)]
+    public async Task<IActionResult> GetShifts(CancellationToken cancellationToken)
+    {
+        // TODO: 实现获取班次列表查询
+        return Ok(new { message = "获取班次列表功能待实现" });
+    }
+    
+    /// <summary>
     /// 获取部门考勤统计
     /// </summary>
     [HttpGet("statistics/department/{departmentId:guid}")]
@@ -97,9 +156,9 @@ public class AttendanceController(IMediator mediator) : ControllerBase
     /// <summary>
     /// 审批补卡申请
     /// </summary>
-    [HttpPost("manual-check/{id:guid}/approve")]
+    [HttpPost("correction/{id:guid}/approve")]
     [RequirePermission(Permissions.AttendanceApprove)]
-    public async Task<IActionResult> ApproveManualCheck(
+    public async Task<IActionResult> ApproveCorrection(
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -118,8 +177,8 @@ public record CheckOutRequest(
     string? Location,
     string? WifiSsid);
 
-public record ManualCheckRequest(
+public record CorrectionRequest(
     DateOnly Date,
-    DateTime CheckInTime,
+    DateTime? CheckInTime,
     DateTime? CheckOutTime,
     string Reason);
