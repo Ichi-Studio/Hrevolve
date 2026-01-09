@@ -29,6 +29,50 @@ public class LeaveController(IMediator mediator) : ControllerBase
     }
     
     /// <summary>
+    /// 获取请假申请列表（管理员）
+    /// </summary>
+    [HttpGet("requests")]
+    [RequirePermission(Permissions.LeaveRead)]
+    public async Task<IActionResult> GetLeaveRequests(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? status = null,
+        [FromQuery] Guid? employeeId = null,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: 实现获取请假申请列表查询
+        return Ok(new 
+        { 
+            message = "获取请假申请列表功能待实现",
+            items = Array.Empty<object>(),
+            total = 0,
+            page,
+            pageSize
+        });
+    }
+    
+    /// <summary>
+    /// 获取待审批的请假申请
+    /// </summary>
+    [HttpGet("requests/pending")]
+    [RequirePermission(Permissions.LeaveApprove)]
+    public async Task<IActionResult> GetPendingLeaveRequests(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: 实现获取待审批请假申请查询
+        return Ok(new 
+        { 
+            message = "获取待审批请假申请功能待实现",
+            items = Array.Empty<object>(),
+            total = 0,
+            page,
+            pageSize
+        });
+    }
+    
+    /// <summary>
     /// 获取请假申请详情
     /// </summary>
     [HttpGet("requests/{id:guid}")]
@@ -91,6 +135,20 @@ public class LeaveController(IMediator mediator) : ControllerBase
     {
         // TODO: 实现取消请假命令
         return Ok(new { message = "取消请假功能待实现" });
+    }
+    
+    /// <summary>
+    /// 获取员工假期余额
+    /// </summary>
+    [HttpGet("balances/{employeeId:guid}")]
+    [RequirePermission(Permissions.LeaveRead)]
+    public async Task<IActionResult> GetEmployeeLeaveBalances(
+        Guid employeeId,
+        [FromQuery] int? year,
+        CancellationToken cancellationToken)
+    {
+        // TODO: 实现获取员工假期余额查询
+        return Ok(new { message = "获取员工假期余额功能待实现" });
     }
     
     /// <summary>

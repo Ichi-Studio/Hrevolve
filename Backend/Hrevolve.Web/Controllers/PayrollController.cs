@@ -38,15 +38,41 @@ public class PayrollController(IMediator mediator) : ControllerBase
     /// <summary>
     /// 执行薪资计算（试算）
     /// </summary>
-    [HttpPost("periods/{periodId:guid}/calculate")]
+    [HttpPost("calculate")]
     [RequirePermission(Permissions.PayrollWrite)]
     public async Task<IActionResult> CalculatePayroll(
+        [FromBody] CalculatePayrollRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: 实现薪资计算命令
+        return Ok(new { message = request.IsDryRun ? "薪资试算完成" : "薪资计算完成" });
+    }
+    
+    /// <summary>
+    /// 按周期执行薪资计算（试算）
+    /// </summary>
+    [HttpPost("periods/{periodId:guid}/calculate")]
+    [RequirePermission(Permissions.PayrollWrite)]
+    public async Task<IActionResult> CalculatePayrollByPeriod(
         Guid periodId,
         [FromQuery] bool isDryRun = true,
         CancellationToken cancellationToken = default)
     {
         // TODO: 实现薪资计算命令
         return Ok(new { message = isDryRun ? "薪资试算完成" : "薪资计算完成" });
+    }
+    
+    /// <summary>
+    /// 审批薪资周期
+    /// </summary>
+    [HttpPost("periods/{periodId:guid}/approve")]
+    [RequirePermission(Permissions.PayrollApprove)]
+    public async Task<IActionResult> ApprovePayrollPeriod(
+        Guid periodId,
+        CancellationToken cancellationToken)
+    {
+        // TODO: 实现审批薪资周期命令
+        return Ok(new { message = "薪资周期已审批" });
     }
     
     /// <summary>
@@ -63,9 +89,22 @@ public class PayrollController(IMediator mediator) : ControllerBase
     }
     
     /// <summary>
+    /// 获取薪资记录详情
+    /// </summary>
+    [HttpGet("records/{id:guid}")]
+    [RequirePermission(Permissions.PayrollRead)]
+    public async Task<IActionResult> GetPayrollRecordById(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        // TODO: 实现获取薪资记录详情查询
+        return Ok(new { message = "获取薪资记录详情功能待实现" });
+    }
+    
+    /// <summary>
     /// 获取员工薪资单
     /// </summary>
-    [HttpGet("records/{employeeId:guid}")]
+    [HttpGet("records/employee/{employeeId:guid}")]
     [RequirePermission(Permissions.PayrollRead)]
     public async Task<IActionResult> GetEmployeePayrollRecords(
         Guid employeeId,
@@ -119,6 +158,11 @@ public record CreatePayrollPeriodRequest(
     DateOnly StartDate,
     DateOnly EndDate,
     DateOnly PayDate);
+
+public record CalculatePayrollRequest(
+    Guid PeriodId,
+    Guid[]? EmployeeIds,
+    bool IsDryRun = true);
 
 public record CreatePayrollItemRequest(
     string Name,

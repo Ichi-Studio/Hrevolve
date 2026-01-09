@@ -10,6 +10,31 @@ public class EmployeesController(IMediator mediator) : ControllerBase
 {
     
     /// <summary>
+    /// 获取员工列表
+    /// </summary>
+    [HttpGet]
+    [RequirePermission(Permissions.EmployeeRead)]
+    public async Task<IActionResult> GetEmployees(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] int total = 0,
+        [FromQuery] string? keyword = null,
+        [FromQuery] Guid? departmentId = null,
+        [FromQuery] string? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: 实现获取员工列表查询
+        return Ok(new 
+        { 
+            message = "获取员工列表功能待实现",
+            items = Array.Empty<object>(),
+            total = 0,
+            page,
+            pageSize
+        });
+    }
+    
+    /// <summary>
     /// 获取员工详情
     /// </summary>
     [HttpGet("{id:guid}")]

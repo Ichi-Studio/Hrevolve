@@ -73,6 +73,17 @@ public class OrganizationsController(IMediator mediator) : ControllerBase
     }
     
     /// <summary>
+    /// 获取所有职位列表
+    /// </summary>
+    [HttpGet("positions")]
+    [RequirePermission(Permissions.OrganizationRead)]
+    public async Task<IActionResult> GetAllPositions(CancellationToken cancellationToken)
+    {
+        // TODO: 实现获取所有职位查询
+        return Ok(new { message = "获取所有职位功能待实现" });
+    }
+    
+    /// <summary>
     /// 获取组织单元下的职位
     /// </summary>
     [HttpGet("{id:guid}/positions")]
