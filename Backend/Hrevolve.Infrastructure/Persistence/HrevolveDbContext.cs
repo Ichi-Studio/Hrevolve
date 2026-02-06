@@ -10,6 +10,11 @@ public class HrevolveDbContext : DbContext
 {
     private readonly ITenantContextAccessor _tenantContextAccessor;
     private readonly ICurrentUserAccessor _currentUserAccessor;
+
+    public Guid CurrentTenantId =>
+        _tenantContextAccessor.TenantContext?.HasTenant == true
+            ? _tenantContextAccessor.TenantContext.TenantId
+            : Guid.Empty;
     
     public HrevolveDbContext(
         DbContextOptions<HrevolveDbContext> options,
@@ -67,54 +72,29 @@ public class HrevolveDbContext : DbContext
         // 应用所有配置
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(HrevolveDbContext).Assembly);
         
-        // 全局查询过滤器 - 多租户隔离
-        ConfigureTenantFilter(modelBuilder);
-        
-        // 全局查询过滤器 - 软删除
-        ConfigureSoftDeleteFilter(modelBuilder);
+        ConfigureGlobalFilters(modelBuilder);
     }
     
-    private void ConfigureTenantFilter(ModelBuilder modelBuilder)
-    {
-        // 为所有AuditableEntity添加租户过滤器
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
-            {
-                var method = typeof(HrevolveDbContext)
-                    .GetMethod(nameof(SetTenantFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
-                    .MakeGenericMethod(entityType.ClrType);
-                
-                method.Invoke(null, [modelBuilder, this]);
-            }
-        }
-    }
-    
-    private static void SetTenantFilter<T>(ModelBuilder modelBuilder, HrevolveDbContext context) where T : AuditableEntity
-    {
-        modelBuilder.Entity<T>().HasQueryFilter(e => 
-            context._tenantContextAccessor.TenantContext == null || 
-            e.TenantId == context._tenantContextAccessor.TenantContext.TenantId);
-    }
-    
-    private void ConfigureSoftDeleteFilter(ModelBuilder modelBuilder)
+    private void ConfigureGlobalFilters(ModelBuilder modelBuilder)
     {
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var method = typeof(HrevolveDbContext)
-                    .GetMethod(nameof(SetSoftDeleteFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+                    .GetMethod(nameof(SetGlobalFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
                     .MakeGenericMethod(entityType.ClrType);
                 
-                method.Invoke(null, [modelBuilder]);
+                method.Invoke(this, [modelBuilder]);
             }
         }
     }
     
-    private static void SetSoftDeleteFilter<T>(ModelBuilder modelBuilder) where T : AuditableEntity
+    private void SetGlobalFilter<T>(ModelBuilder modelBuilder) where T : AuditableEntity
     {
-        modelBuilder.Entity<T>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<T>().HasQueryFilter(e =>
+            !e.IsDeleted &&
+            (CurrentTenantId == Guid.Empty || e.TenantId == CurrentTenantId));
     }
     
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

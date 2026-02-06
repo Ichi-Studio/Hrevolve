@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#1f2937"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="640" height="420" rx="18" fill="url(#g)"/>
+  <rect x="28" y="28" width="584" height="364" rx="14" fill="#0b1220" stroke="#334155" stroke-width="2"/>
+  <text x="56" y="86" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="26" font-weight="700">Hrevolve Demo Receipt</text>
+  <text x="56" y="120" fill="#94a3b8" font-family="Segoe UI, Arial" font-size="14">Receipt No: 001</text>
+  <line x1="56" y1="148" x2="584" y2="148" stroke="#334155" stroke-width="1"/>
+  <text x="56" y="188" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Item: Travel</text>
+  <text x="56" y="220" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Amount: ¥1,860.50</text>
+  <text x="56" y="252" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Date: 2026-02-01</text>
+  <text x="56" y="304" fill="#94a3b8" font-family="Consolas, Menlo, monospace" font-size="12">This is a demo asset served from /demo-assets/receipts/receipt-001.svg</text>
+  <rect x="444" y="176" width="140" height="140" rx="10" fill="#111827" stroke="#334155"/>
+  <path d="M468 206h92v92h-92z" fill="none" stroke="#94a3b8" stroke-width="2"/>
+  <path d="M468 252h92" stroke="#94a3b8" stroke-width="2"/>
+  <path d="M514 206v92" stroke="#94a3b8" stroke-width="2"/>
+</svg>

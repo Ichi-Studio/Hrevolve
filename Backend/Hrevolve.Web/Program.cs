@@ -91,6 +91,25 @@ using (var scope = app.Services.CreateScope())
     var dbInitializer = scope.ServiceProvider.GetRequiredService<Hrevolve.Infrastructure.Persistence.DbInitializer>();
     await dbInitializer.InitializeAsync();
     await dbInitializer.SeedAsync();
+
+    var rollbackDemo = args.Contains("--rollback-demo", StringComparer.OrdinalIgnoreCase);
+    var seedDemoOnly = args.Contains("--seed-demo", StringComparer.OrdinalIgnoreCase);
+    var seedDemoOnStartup = builder.Configuration.GetValue<bool>("Seed:Demo");
+
+    if (rollbackDemo)
+    {
+        await dbInitializer.RollbackDemoAsync();
+        return;
+    }
+
+    if (seedDemoOnly || seedDemoOnStartup)
+    {
+        await dbInitializer.SeedDemoAsync();
+        if (seedDemoOnly)
+        {
+            return;
+        }
+    }
 }
 
 // 配置中间件管道
@@ -114,6 +133,8 @@ app.Use(async (context, next) =>
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 
