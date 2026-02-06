@@ -110,17 +110,6 @@ const handleCancel = async (id: string) => {
 // 格式化日期
 const formatDate = (date: string) => dayjs(date).format('YYYY-MM-DD');
 
-// 获取状态标签类型
-const getStatusType = (status: string) => {
-  const types: Record<string, string> = {
-    Pending: 'warning',
-    Approved: 'success',
-    Rejected: 'danger',
-    Cancelled: 'info',
-  };
-  return types[status] || 'info';
-};
-
 onMounted(() => {
   fetchBalances();
   fetchRequests();

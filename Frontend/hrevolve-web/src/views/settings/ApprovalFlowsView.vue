@@ -16,18 +16,18 @@ const saving = ref(false);
 
 // 流程类型 - 使用 computed 实现响应式翻译
 const flowTypes = computed(() => [
-  { value: 'leave', label: t('settings.flowTypeLeave') },
-  { value: 'expense', label: t('settings.flowTypeExpense') },
-  { value: 'overtime', label: t('settings.flowTypeOvertime') },
-  { value: 'attendance', label: t('settings.flowTypeAttendance') },
+  { value: 'Leave', label: t('settings.flowTypeLeave') },
+  { value: 'Expense', label: t('settings.flowTypeExpense') },
+  { value: 'Overtime', label: t('settings.flowTypeOvertime') },
+  { value: 'Transfer', label: t('settings.flowTypeTransfer') },
 ]);
 
 // 审批人类型 - 使用 computed 实现响应式翻译
 const approverTypes = computed(() => [
-  { value: 'supervisor', label: t('settings.approverSupervisor') },
-  { value: 'department_head', label: t('settings.approverDepartmentHead') },
-  { value: 'specific', label: t('settings.approverSpecific') },
-  { value: 'hr', label: t('settings.approverHR') },
+  { value: 'DirectManager', label: t('settings.approverSupervisor') },
+  { value: 'DepartmentHead', label: t('settings.approverDepartmentHead') },
+  { value: 'HR', label: t('settings.approverHR') },
+  { value: 'SpecificUser', label: t('settings.approverSpecific') },
 ]);
 
 const fetchData = async () => {
@@ -39,7 +39,7 @@ const fetchData = async () => {
 };
 
 const handleAdd = () => {
-  form.value = { type: 'leave', isActive: true, steps: [{ order: 1, approverType: 'supervisor', approverIds: [] }] };
+  form.value = { type: 'Leave', isActive: true, steps: [{ order: 1, approverType: 'DirectManager', isRequired: true }] };
   dialogTitle.value = t('settings.newFlow');
   dialogVisible.value = true;
 };
@@ -77,7 +77,7 @@ const handleSave = async () => {
 // 添加审批步骤
 const addStep = () => {
   if (!form.value.steps) form.value.steps = [];
-  form.value.steps.push({ order: form.value.steps.length + 1, approverType: 'supervisor', approverIds: [] });
+  form.value.steps.push({ order: form.value.steps.length + 1, approverType: 'DirectManager', isRequired: true });
 };
 
 // 删除审批步骤
@@ -114,7 +114,6 @@ onMounted(() => fetchData());
             <el-tag :type="row.isActive ? 'success' : 'danger'" size="small">{{ row.isActive ? t('settings.enabled') : t('settings.disabled') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="description" :label="t('settings.description')" min-width="200" show-overflow-tooltip />
         <el-table-column :label="t('common.actions')" width="120" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" size="small" @click="handleEdit(row)"><el-icon><Edit /></el-icon></el-button>
@@ -132,7 +131,6 @@ onMounted(() => fetchData());
             <el-option v-for="ft in flowTypes" :key="ft.value" :label="ft.label" :value="ft.value" />
           </el-select>
         </el-form-item>
-        <el-form-item :label="t('settings.description')"><el-input v-model="form.description" type="textarea" :rows="2" /></el-form-item>
         <el-form-item :label="t('settings.approvalSteps')">
           <div class="steps-list">
             <div v-for="(step, index) in form.steps" :key="index" class="step-item">

@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Promotion, Delete, ChatDotRound } from '@element-plus/icons-vue';
 import { agentApi } from '@/api';
+import { useAuthStore } from '@/stores/auth';
 import type { ChatMessage } from '@/types';
 import dayjs from 'dayjs';
 
 const { t } = useI18n();
+const router = useRouter();
+const authStore = useAuthStore();
+const hasEmployee = computed(() => !!authStore.user?.employeeId);
+const canManageUsers = computed(() => authStore.hasPermission('settings:read'));
 
 // 消息列表
 const messages = ref<ChatMessage[]>([]);
@@ -36,6 +42,10 @@ const scrollToBottom = () => {
 
 // 发送消息
 const sendMessage = async (text?: string) => {
+  if (!hasEmployee.value) {
+    ElMessage.warning(t('assistantExtra.noEmployee'));
+    return;
+  }
   const message = text || inputMessage.value.trim();
   if (!message || loading.value) return;
   
@@ -83,6 +93,10 @@ const sendMessage = async (text?: string) => {
 
 // 清空对话
 const clearHistory = async () => {
+  if (!hasEmployee.value) {
+    ElMessage.warning(t('assistantExtra.noEmployee'));
+    return;
+  }
   try {
     await ElMessageBox.confirm(t('assistantExtra.confirmClear'), t('assistantExtra.tip'), {
       confirmButtonText: t('common.confirm'),
@@ -100,6 +114,7 @@ const clearHistory = async () => {
 
 // 加载历史记录
 const loadHistory = async () => {
+  if (!hasEmployee.value) return;
   try {
     const res = await agentApi.getHistory(20);
     messages.value = res.data.map((msg, index) => ({
@@ -117,6 +132,10 @@ const loadHistory = async () => {
 // 格式化时间
 const formatTime = (timestamp: string) => {
   return dayjs(timestamp).format('HH:mm');
+};
+
+const goToUserManagement = () => {
+  router.push('/company/users');
 };
 
 onMounted(() => {
@@ -142,6 +161,7 @@ onMounted(() => {
           class="clear-btn"
           text
           :icon="Delete"
+          :disabled="!hasEmployee"
           @click="clearHistory"
         >
           {{ t('assistant.clearHistory') }}
@@ -157,6 +177,21 @@ onMounted(() => {
           </div>
           <h3>{{ t('assistantExtra.welcomeTitle') }}</h3>
           <p>{{ t('assistantExtra.welcomeDesc') }}</p>
+          <p v-if="!hasEmployee" class="no-employee-tip">{{ t('assistantExtra.noEmployee') }}</p>
+          <div v-if="!hasEmployee" class="link-guide">
+            <p class="link-guide-title">{{ t('assistantExtra.linkGuideTitle') }}</p>
+            <ol class="link-guide-steps">
+              <li>{{ t('assistantExtra.linkGuideStep1') }}</li>
+              <li>{{ t('assistantExtra.linkGuideStep2') }}</li>
+              <li>{{ t('assistantExtra.linkGuideStep3') }}</li>
+            </ol>
+            <div class="link-guide-actions">
+              <el-button v-if="canManageUsers" type="primary" @click="goToUserManagement">
+                {{ t('assistantExtra.linkGuideButton') }}
+              </el-button>
+              <p v-else class="link-guide-hint">{{ t('assistantExtra.linkGuideAdminHint') }}</p>
+            </div>
+          </div>
           
           <div class="suggestions">
             <p class="suggestions-title">{{ t('assistant.suggestions') }}</p>
@@ -165,6 +200,7 @@ onMounted(() => {
                 v-for="suggestion in suggestions"
                 :key="suggestion.text"
                 class="suggestion-btn"
+                :disabled="!hasEmployee"
                 @click="sendMessage(suggestion.text)"
               >
                 <span class="suggestion-icon">{{ suggestion.icon }}</span>
@@ -206,12 +242,12 @@ onMounted(() => {
             v-model="inputMessage"
             type="text"
             :placeholder="t('assistant.placeholder')"
-            :disabled="loading"
+            :disabled="loading || !hasEmployee"
             @keyup.enter="sendMessage()"
           />
           <button
             class="send-btn"
-            :disabled="loading || !inputMessage.trim()"
+            :disabled="loading || !hasEmployee || !inputMessage.trim()"
             @click="sendMessage()"
           >
             <el-icon v-if="!loading" :size="20"><Promotion /></el-icon>
@@ -339,6 +375,51 @@ $border-color: rgba(212, 175, 55, 0.2);
       font-size: 14px;
       line-height: 1.6;
     }
+
+    .no-employee-tip {
+      margin-top: -16px;
+      margin-bottom: 32px;
+      color: rgba(255, 77, 79, 0.9);
+      font-size: 13px;
+    }
+
+    .link-guide {
+      margin: -12px auto 28px;
+      text-align: left;
+      padding: 12px 14px;
+      border: 1px solid $border-color;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      max-width: 520px;
+      
+      .link-guide-title {
+        margin: 0 0 8px;
+        font-size: 13px;
+        color: $text-secondary;
+        font-weight: 600;
+      }
+      
+      .link-guide-steps {
+        margin: 0;
+        padding-left: 18px;
+        color: $text-tertiary;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      
+      .link-guide-actions {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .link-guide-hint {
+        margin: 0;
+        color: $text-tertiary;
+        font-size: 12px;
+      }
+    }
     
     .suggestions {
       .suggestions-title {
@@ -365,6 +446,12 @@ $border-color: rgba(212, 175, 55, 0.2);
           font-size: 13px;
           cursor: pointer;
           transition: all 0.3s;
+          
+          &:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+          }
           
           &:hover {
             background: rgba(212, 175, 55, 0.1);

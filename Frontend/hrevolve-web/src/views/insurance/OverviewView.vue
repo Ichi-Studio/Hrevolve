@@ -14,7 +14,7 @@ const fetchData = async () => {
   try {
     const [statsRes, enrollmentsRes] = await Promise.all([
       insuranceApi.getInsuranceStats(),
-      insuranceApi.getEmployeeInsurances({ pageSize: 10 })
+      insuranceApi.getEmployeeInsurances({ page: 1, pageSize: 10 })
     ]);
     stats.value = statsRes.data;
     recentEnrollments.value = enrollmentsRes.data.items || enrollmentsRes.data;
