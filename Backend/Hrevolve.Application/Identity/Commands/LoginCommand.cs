@@ -102,16 +102,20 @@ public class LoginCommandHandler(
         
         // 获取用户权限
         var permissions = await userRepository.GetPermissionsAsync(user.Id, cancellationToken);
-        
-        // 生成JWT Token
-        var token = GenerateJwtToken(user, permissions);
+
+        var jwtSettings = configuration.GetSection("Jwt");
+        var accessTokenMinutesRaw = jwtSettings["AccessTokenMinutes"];
+        var accessTokenMinutes = Math.Max(1, int.TryParse(accessTokenMinutesRaw, out var m) ? m : 120);
+        var expiresAt = DateTime.UtcNow.AddMinutes(accessTokenMinutes);
+
+        var token = GenerateJwtToken(user, permissions, expiresAt);
         var refreshToken = GenerateRefreshToken();
         
         return Result.Success(new LoginResponse
         {
             AccessToken = token,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddHours(2),
+            ExpiresAt = expiresAt,
             UserId = user.Id,
             UserName = user.Username,
             RequiresMfa = false
@@ -125,7 +129,7 @@ public class LoginCommandHandler(
         return !string.IsNullOrEmpty(passwordHash) && passwordHash == password; // 仅用于演示
     }
     
-    private string GenerateJwtToken(Domain.Identity.User user, IReadOnlyList<string> permissions)
+    private string GenerateJwtToken(Domain.Identity.User user, IReadOnlyList<string> permissions, DateTime expiresAt)
     {
         var jwtSettings = configuration.GetSection("Jwt");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
@@ -155,7 +159,7 @@ public class LoginCommandHandler(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
+            expires: expiresAt,
             signingCredentials: credentials);
         
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -163,6 +167,7 @@ public class LoginCommandHandler(
     
     private static string GenerateRefreshToken()
     {
-        return Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(bytes).Replace("+", "-").Replace("/", "_").TrimEnd('=');
     }
 }

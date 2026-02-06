@@ -175,3 +175,57 @@ public class TrustedDeviceConfiguration : IEntityTypeConfiguration<TrustedDevice
             .IsUnique();
     }
 }
+
+public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
+{
+    public void Configure(EntityTypeBuilder<RefreshToken> builder)
+    {
+        builder.ToTable("RefreshTokens");
+
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.TokenHash)
+            .HasMaxLength(64)
+            .IsRequired();
+
+        builder.Property(x => x.CreatedByIp)
+            .HasMaxLength(50);
+
+        builder.Property(x => x.RevokedByIp)
+            .HasMaxLength(50);
+
+        builder.Property(x => x.CreatedByUserAgent)
+            .HasMaxLength(500);
+
+        builder.HasIndex(x => x.TokenHash)
+            .IsUnique();
+
+        builder.HasIndex(x => new { x.TenantId, x.UserId });
+
+        builder.Ignore(x => x.DomainEvents);
+    }
+}
+
+public class RevokedAccessTokenConfiguration : IEntityTypeConfiguration<RevokedAccessToken>
+{
+    public void Configure(EntityTypeBuilder<RevokedAccessToken> builder)
+    {
+        builder.ToTable("RevokedAccessTokens");
+
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Jti)
+            .HasMaxLength(64)
+            .IsRequired();
+
+        builder.Property(x => x.RevokedByIp)
+            .HasMaxLength(50);
+
+        builder.HasIndex(x => x.Jti)
+            .IsUnique();
+
+        builder.HasIndex(x => new { x.TenantId, x.UserId });
+
+        builder.Ignore(x => x.DomainEvents);
+    }
+}
