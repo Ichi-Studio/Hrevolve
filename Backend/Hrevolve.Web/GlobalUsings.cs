@@ -13,6 +13,7 @@ global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.AspNetCore.Server.Kestrel.Core;
 global using Microsoft.IdentityModel.Tokens;
+global using Microsoft.EntityFrameworkCore;
 
 // MediatR
 global using MediatR;
@@ -30,6 +31,11 @@ global using Hrevolve.Application;
 global using Hrevolve.Infrastructure;
 global using Hrevolve.Domain.Identity;
 global using Hrevolve.Domain.Attendance;
+global using Hrevolve.Domain.Employees;
+global using Hrevolve.Domain.Organizations;
+global using Hrevolve.Domain.Leave;
+global using Hrevolve.Domain.Payroll;
+global using Hrevolve.Domain.Expense;
 
 // Application 层命令和查询
 global using Hrevolve.Application.Employees.Commands;

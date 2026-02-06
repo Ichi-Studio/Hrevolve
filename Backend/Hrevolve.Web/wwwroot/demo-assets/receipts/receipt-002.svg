@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+  <rect x="0" y="0" width="640" height="420" rx="18" fill="#0f172a"/>
+  <rect x="28" y="28" width="584" height="364" rx="14" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="56" y="86" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="26" font-weight="700">Hrevolve Demo Receipt</text>
+  <text x="56" y="120" fill="#94a3b8" font-family="Segoe UI, Arial" font-size="14">Receipt No: 002</text>
+  <line x1="56" y1="148" x2="584" y2="148" stroke="#334155" stroke-width="1"/>
+  <text x="56" y="188" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Item: Meals</text>
+  <text x="56" y="220" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Amount: ¥268.00</text>
+  <text x="56" y="252" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Date: 2026-01-28</text>
+  <text x="56" y="304" fill="#94a3b8" font-family="Consolas, Menlo, monospace" font-size="12">Demo asset /demo-assets/receipts/receipt-002.svg</text>
+  <circle cx="514" cy="246" r="58" fill="#0b1220" stroke="#334155"/>
+  <text x="514" y="252" text-anchor="middle" fill="#fbbf24" font-family="Segoe UI, Arial" font-size="18" font-weight="700">PAID</text>
+</svg>

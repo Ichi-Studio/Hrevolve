@@ -25,11 +25,24 @@ public static class DependencyInjection
         });
         
         // Redis缓存
-        services.AddStackExchangeRedisCache(options =>
+        var redisConnection = configuration.GetConnectionString("Redis");
+        if (string.IsNullOrWhiteSpace(redisConnection) ||
+            string.Equals(redisConnection, "disabled", StringComparison.OrdinalIgnoreCase))
         {
-            options.Configuration = configuration.GetConnectionString("Redis");
-            options.InstanceName = "Hrevolve:";
-        });
+            services.AddDistributedMemoryCache();
+        }
+        else
+        {
+            var cfg = redisConnection.Contains("connectTimeout=", StringComparison.OrdinalIgnoreCase)
+                ? redisConnection
+                : $"{redisConnection},connectTimeout=500,syncTimeout=500,abortConnect=false";
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = cfg;
+                options.InstanceName = "Hrevolve:";
+            });
+        }
         
         // 多租户
         services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
@@ -43,6 +56,7 @@ public static class DependencyInjection
         
         // 数据库初始化器
         services.AddScoped<DbInitializer>();
+        services.AddScoped<DemoDataSeeder>();
         
         // 仓储
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

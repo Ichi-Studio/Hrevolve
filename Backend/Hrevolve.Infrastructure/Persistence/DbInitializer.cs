@@ -3,7 +3,7 @@ namespace Hrevolve.Infrastructure.Persistence;
 /// <summary>
 /// 数据库初始化器 - 创建初始数据
 /// </summary>
-public class DbInitializer(HrevolveDbContext context, ILogger<DbInitializer> logger)
+public class DbInitializer(HrevolveDbContext context, DemoDataSeeder demoDataSeeder, ILogger<DbInitializer> logger)
 {
     
     /// <summary>
@@ -48,6 +48,12 @@ public class DbInitializer(HrevolveDbContext context, ILogger<DbInitializer> log
             throw;
         }
     }
+
+    public Task SeedDemoAsync(CancellationToken cancellationToken = default) =>
+        demoDataSeeder.SeedAsync(cancellationToken);
+
+    public Task RollbackDemoAsync(CancellationToken cancellationToken = default) =>
+        demoDataSeeder.RollbackAsync(cancellationToken);
     
     private async Task SeedTenantsAsync()
     {

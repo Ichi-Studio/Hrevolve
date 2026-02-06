@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+  <rect x="0" y="0" width="640" height="420" rx="18" fill="#111827"/>
+  <rect x="28" y="28" width="584" height="364" rx="14" fill="#0b1220" stroke="#334155" stroke-width="2"/>
+  <text x="56" y="86" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="26" font-weight="700">Hrevolve Demo Receipt</text>
+  <text x="56" y="120" fill="#94a3b8" font-family="Segoe UI, Arial" font-size="14">Receipt No: 003</text>
+  <line x1="56" y1="148" x2="584" y2="148" stroke="#334155" stroke-width="1"/>
+  <text x="56" y="188" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Item: Office</text>
+  <text x="56" y="220" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Amount: ¥680.00</text>
+  <text x="56" y="252" fill="#e5e7eb" font-family="Segoe UI, Arial" font-size="16">Date: 2026-01-18</text>
+  <text x="56" y="304" fill="#94a3b8" font-family="Consolas, Menlo, monospace" font-size="12">Demo asset /demo-assets/receipts/receipt-003.svg</text>
+  <path d="M456 190h112v168H456z" fill="#111827" stroke="#334155"/>
+  <path d="M468 214h88M468 240h88M468 266h88M468 292h88M468 318h88" stroke="#94a3b8" stroke-width="2"/>
+</svg>

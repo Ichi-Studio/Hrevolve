@@ -16,6 +16,7 @@ public class TenantResolver : ITenantResolver
     private readonly IDistributedCache _cache;
     private const string CacheKeyPrefix = "tenant:";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
+    private static long _cacheDisabledUntilTicks;
     
     public TenantResolver(HrevolveDbContext context, IDistributedCache cache)
     {
@@ -30,10 +31,20 @@ public class TenantResolver : ITenantResolver
     {
         // 先从缓存获取
         var cacheKey = $"{CacheKeyPrefix}identifier:{identifier}";
-        var cached = await _cache.GetStringAsync(cacheKey);
-        if (!string.IsNullOrEmpty(cached))
+        if (IsCacheAvailable())
         {
-            return JsonSerializer.Deserialize<TenantInfo>(cached);
+            try
+            {
+                var cached = await _cache.GetStringAsync(cacheKey);
+                if (!string.IsNullOrEmpty(cached))
+                {
+                    return JsonSerializer.Deserialize<TenantInfo>(cached);
+                }
+            }
+            catch
+            {
+                DisableCacheTemporarily();
+            }
         }
         
         // 从数据库查询（忽略租户过滤器）
@@ -47,10 +58,20 @@ public class TenantResolver : ITenantResolver
         var tenantInfo = MapToTenantInfo(tenant);
         
         // 缓存结果
-        await _cache.SetStringAsync(
-            cacheKey,
-            JsonSerializer.Serialize(tenantInfo),
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = CacheDuration });
+        if (IsCacheAvailable())
+        {
+            try
+            {
+                await _cache.SetStringAsync(
+                    cacheKey,
+                    JsonSerializer.Serialize(tenantInfo),
+                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = CacheDuration });
+            }
+            catch
+            {
+                DisableCacheTemporarily();
+            }
+        }
         
         return tenantInfo;
     }
@@ -61,10 +82,20 @@ public class TenantResolver : ITenantResolver
     public async Task<TenantInfo?> GetByIdAsync(Guid tenantId)
     {
         var cacheKey = $"{CacheKeyPrefix}id:{tenantId}";
-        var cached = await _cache.GetStringAsync(cacheKey);
-        if (!string.IsNullOrEmpty(cached))
+        if (IsCacheAvailable())
         {
-            return JsonSerializer.Deserialize<TenantInfo>(cached);
+            try
+            {
+                var cached = await _cache.GetStringAsync(cacheKey);
+                if (!string.IsNullOrEmpty(cached))
+                {
+                    return JsonSerializer.Deserialize<TenantInfo>(cached);
+                }
+            }
+            catch
+            {
+                DisableCacheTemporarily();
+            }
         }
         
         var tenant = await _context.Tenants
@@ -75,12 +106,34 @@ public class TenantResolver : ITenantResolver
         
         var tenantInfo = MapToTenantInfo(tenant);
         
-        await _cache.SetStringAsync(
-            cacheKey,
-            JsonSerializer.Serialize(tenantInfo),
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = CacheDuration });
+        if (IsCacheAvailable())
+        {
+            try
+            {
+                await _cache.SetStringAsync(
+                    cacheKey,
+                    JsonSerializer.Serialize(tenantInfo),
+                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = CacheDuration });
+            }
+            catch
+            {
+                DisableCacheTemporarily();
+            }
+        }
         
         return tenantInfo;
+    }
+
+    private static bool IsCacheAvailable()
+    {
+        var disabledUntil = Interlocked.Read(ref _cacheDisabledUntilTicks);
+        return DateTime.UtcNow.Ticks >= disabledUntil;
+    }
+
+    private static void DisableCacheTemporarily()
+    {
+        var until = DateTime.UtcNow.AddMinutes(2).Ticks;
+        Interlocked.Exchange(ref _cacheDisabledUntilTicks, until);
     }
     
     private static TenantInfo MapToTenantInfo(Tenant tenant)
