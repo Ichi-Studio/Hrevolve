@@ -44,13 +44,17 @@ const handleTerminate = async (item: EmployeeInsurance) => {
 };
 
 const handleSave = async () => {
-  if (!form.value.employeeId || !form.value.planId) {
+  if (!form.value.employeeId || !form.value.planId || !form.value.startDate) {
     ElMessage.warning(t('tax.fillRequired'));
     return;
   }
   saving.value = true;
   try {
-    await insuranceApi.enrollEmployeeInsurance(form.value);
+    await insuranceApi.enrollEmployeeInsurance({
+      employeeId: form.value.employeeId,
+      planId: form.value.planId,
+      startDate: form.value.startDate,
+    });
     ElMessage.success(t('common.success'));
     dialogVisible.value = false;
     fetchData();

@@ -67,9 +67,19 @@ const handleSave = async () => {
   saving.value = true;
   try {
     if (form.value.id) {
-      await settingsApi.updateRole(form.value.id, form.value);
+      await settingsApi.updateRole(form.value.id, {
+        name: form.value.name,
+        description: form.value.description,
+        isActive: form.value.isActive,
+      });
     } else {
-      await settingsApi.createRole(form.value);
+      await settingsApi.createRole({
+        code: form.value.code || '',
+        name: form.value.name || '',
+        description: form.value.description,
+        permissions: form.value.permissions,
+        isActive: form.value.isActive,
+      });
     }
     ElMessage.success(t('common.success'));
     dialogVisible.value = false;

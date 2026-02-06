@@ -14,6 +14,9 @@ const searchKeyword = ref('');
 const actionFilter = ref('');
 const dateRange = ref<[Date, Date] | null>(null);
 const pagination = ref({ page: 1, pageSize: 20, total: 0 });
+const actionValues = ['create', 'update', 'delete', 'login', 'logout', 'export'] as const;
+const resolveAction = (value: string): AuditLog['action'] =>
+  actionValues.includes(value as AuditLog['action']) ? (value as AuditLog['action']) : 'update';
 
 // 操作类型 - 使用 computed 实现响应式翻译
 const actionTypes = computed(() => [
@@ -35,7 +38,19 @@ const fetchData = async () => {
       params.endDate = dateRange.value[1].toISOString().split('T')[0];
     }
     const res = await settingsApi.getAuditLogs(params);
-    logs.value = res.data.items || res.data;
+    const rawItems = res.data.items || res.data;
+    logs.value = rawItems.map(item => ({
+      id: item.id,
+      userId: item.userId,
+      userName: item.userName,
+      action: resolveAction(item.action),
+      entityType: item.resource,
+      entityId: item.resourceId,
+      description: item.details,
+      ipAddress: item.ipAddress,
+      userAgent: item.userAgent,
+      createdAt: item.createdAt,
+    }));
     pagination.value.total = res.data.total || logs.value.length;
   } catch { /* ignore */ } finally { loading.value = false; }
 };

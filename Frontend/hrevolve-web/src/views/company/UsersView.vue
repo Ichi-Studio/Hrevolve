@@ -4,17 +4,17 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete, Search, Refresh, Key } from '@element-plus/icons-vue';
 import { settingsApi } from '@/api';
-import type { User, Role } from '@/types';
+import type { UserExtended, Role } from '@/types';
 
 const { t } = useI18n();
 
 // 状态
 const loading = ref(false);
-const users = ref<User[]>([]);
+const users = ref<UserExtended[]>([]);
 const roles = ref<Role[]>([]);
 const dialogVisible = ref(false);
 const dialogTitle = ref('');
-const form = ref<Partial<User>>({});
+const form = ref<Partial<UserExtended>>({});
 const saving = ref(false);
 const searchKeyword = ref('');
 const roleFilter = ref('');
@@ -59,14 +59,14 @@ const handleAdd = () => {
 };
 
 // 编辑用户
-const handleEdit = (user: User) => {
+const handleEdit = (user: UserExtended) => {
   form.value = { ...user };
   dialogTitle.value = t('company.editUser');
   dialogVisible.value = true;
 };
 
 // 删除用户
-const handleDelete = async (user: User) => {
+const handleDelete = async (user: UserExtended) => {
   await ElMessageBox.confirm(t('expense.confirmDelete', { name: user.displayName }), t('common.confirm'), { type: 'warning' });
   try {
     await settingsApi.deleteUser(user.id);
@@ -76,7 +76,7 @@ const handleDelete = async (user: User) => {
 };
 
 // 重置密码
-const handleResetPassword = async (user: User) => {
+const handleResetPassword = async (user: UserExtended) => {
   await ElMessageBox.confirm(t('company.confirmResetPassword'), t('common.confirm'), { type: 'warning' });
   try {
     await settingsApi.resetUserPassword(user.id);
@@ -95,7 +95,15 @@ const handleSave = async () => {
     if (form.value.id) {
       await settingsApi.updateUser(form.value.id, form.value);
     } else {
-      await settingsApi.createUser(form.value);
+      await settingsApi.createUser({
+        username: form.value.username || '',
+        displayName: form.value.displayName || '',
+        roles: form.value.roles || [],
+        email: form.value.email,
+        employeeId: form.value.employeeId,
+        phone: form.value.phone,
+        isActive: form.value.isActive,
+      });
     }
     ElMessage.success(t('common.success'));
     dialogVisible.value = false;

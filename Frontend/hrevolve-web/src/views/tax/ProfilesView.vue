@@ -15,6 +15,8 @@ const form = ref<Partial<TaxProfile>>({});
 const saving = ref(false);
 const searchKeyword = ref('');
 const pagination = ref({ page: 1, pageSize: 20, total: 0 });
+const getSpecialDeductionTotal = (deductions: TaxProfile['specialDeductions'] | undefined) =>
+  (deductions ?? []).reduce((sum, item) => sum + item.amount, 0);
 
 const fetchData = async () => {
   loading.value = true;
@@ -26,7 +28,11 @@ const fetchData = async () => {
 };
 
 const handleAdd = () => {
-  form.value = { isActive: true };
+  form.value = {
+    taxType: 'Resident',
+    specialDeductions: [],
+    effectiveYear: new Date().getFullYear(),
+  };
   dialogTitle.value = t('tax.newProfile');
   dialogVisible.value = true;
 };
@@ -47,7 +53,7 @@ const handleDelete = async (item: TaxProfile) => {
 };
 
 const handleSave = async () => {
-  if (!form.value.employeeId || !form.value.taxNumber) {
+  if (!form.value.employeeId || !form.value.taxId) {
     ElMessage.warning(t('tax.fillRequired'));
     return;
   }
@@ -82,20 +88,16 @@ onMounted(() => fetchData());
       
       <el-table v-loading="loading" :data="profiles" stripe>
         <el-table-column prop="employeeName" :label="t('tax.employee')" width="120" />
-        <el-table-column prop="taxNumber" :label="t('tax.taxNumber')" width="180" />
+      <el-table-column prop="taxId" :label="t('tax.taxNumber')" width="180" />
         <el-table-column prop="taxType" :label="t('tax.taxType')" width="120">
           <template #default="{ row }">
-            <el-tag size="small">{{ row.taxType === 'resident' ? t('tax.resident') : t('tax.nonResident') }}</el-tag>
+          <el-tag size="small">{{ row.taxType === 'Resident' ? t('tax.resident') : t('tax.nonResident') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="deductions" :label="t('tax.specialDeductionsCol')" min-width="150">
-          <template #default="{ row }">¥{{ row.deductions?.toLocaleString() || 0 }}</template>
-        </el-table-column>
-        <el-table-column prop="isActive" :label="t('common.status')" width="80">
-          <template #default="{ row }">
-            <el-tag :type="row.isActive ? 'success' : 'danger'" size="small">{{ row.isActive ? t('tax.valid') : t('tax.invalid') }}</el-tag>
-          </template>
-        </el-table-column>
+      <el-table-column prop="effectiveYear" :label="t('tax.taxYear')" width="120" />
+      <el-table-column prop="specialDeductions" :label="t('tax.specialDeductionsCol')" min-width="150">
+        <template #default="{ row }">¥{{ getSpecialDeductionTotal(row.specialDeductions).toLocaleString() }}</template>
+      </el-table-column>
         <el-table-column :label="t('common.actions')" width="120" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" size="small" @click="handleEdit(row)"><el-icon><Edit /></el-icon></el-button>
@@ -112,15 +114,16 @@ onMounted(() => fetchData());
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="550px">
       <el-form :model="form" label-width="100px">
         <el-form-item :label="t('employee.employeeNo')" required><el-input v-model="form.employeeId" :placeholder="t('tax.enterEmployeeId')" /></el-form-item>
-        <el-form-item :label="t('tax.taxNumber')" required><el-input v-model="form.taxNumber" :placeholder="t('tax.enterTaxNumber')" /></el-form-item>
+        <el-form-item :label="t('tax.taxNumber')" required><el-input v-model="form.taxId" :placeholder="t('tax.enterTaxNumber')" /></el-form-item>
         <el-form-item :label="t('tax.taxType')">
           <el-select v-model="form.taxType" style="width: 100%">
-            <el-option :label="t('tax.resident')" value="resident" />
-            <el-option :label="t('tax.nonResident')" value="non-resident" />
+            <el-option :label="t('tax.resident')" value="Resident" />
+            <el-option :label="t('tax.nonResident')" value="NonResident" />
           </el-select>
         </el-form-item>
-        <el-form-item :label="t('tax.specialDeductionsCol')"><el-input-number v-model="form.deductions" :min="0" :precision="2" style="width: 100%" /></el-form-item>
-        <el-form-item :label="t('common.status')"><el-switch v-model="form.isActive" :active-text="t('tax.valid')" :inactive-text="t('tax.invalid')" /></el-form-item>
+        <el-form-item :label="t('tax.taxYear')" required>
+          <el-input-number v-model="form.effectiveYear" :min="2000" :max="2100" style="width: 100%" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>

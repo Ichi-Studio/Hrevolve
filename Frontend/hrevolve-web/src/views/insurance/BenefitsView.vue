@@ -59,9 +59,21 @@ const handleSave = async () => {
   saving.value = true;
   try {
     if (form.value.id) {
-      await insuranceApi.updateBenefit(form.value.id, form.value);
+      await insuranceApi.updateBenefit(form.value.id, {
+        name: form.value.name,
+        type: form.value.type,
+        amount: form.value.amount,
+        description: form.value.description,
+        isActive: form.value.isActive,
+      });
     } else {
-      await insuranceApi.createBenefit(form.value);
+      await insuranceApi.createBenefit({
+        name: form.value.name,
+        type: form.value.type,
+        amount: form.value.amount,
+        description: form.value.description,
+        isActive: form.value.isActive,
+      });
     }
     ElMessage.success(t('common.success'));
     dialogVisible.value = false;
