@@ -7,9 +7,9 @@
 目标：覆盖所有用户可见输入/输出/业务流程与边界条件，包含正常路径、异常路径、错误处理、数据完整性、安全性、兼容性与性能基准，形成可上线质量评估结论。
 
 质量评估结论（本轮）：
-- 结论：有条件可上线（需先处理“会话/刷新”相关高风险项）
+- 结论：可上线（会话刷新与登出撤销策略已补齐）
 - 阻断项：0
-- 高风险项：1
+- 高风险项：0
 - 中风险项：2
 - 低风险项：若干（见缺陷与风险章节）
 
@@ -74,7 +74,7 @@
 | AUTH-002 | 获取当前用户信息 | 已登录 | GET /api/auth/me | 返回 roles/permissions/tenantId/employeeId | demo_user 返回“普通员工”、tenantId/employeeId 非空 | PASS |  |
 | AUTH-003 | 错误密码登录 | 无 | password 错误 | 400，code=INVALID_CREDENTIALS | 400，code=INVALID_CREDENTIALS | PASS |  |
 | AUTH-004 | 未登录访问受保护资源 | 无 | GET /api/auth/me | 401 | 401 | PASS |  |
-| AUTH-005 | refresh token | 无 | POST /api/auth/refresh | 返回新 token 或明确未实现 | 返回“Token刷新功能待实现” | PASS |  |
+| AUTH-005 | refresh token | 已获得 refreshToken | POST /api/auth/refresh | 返回新 accessToken/refreshToken，expiresIn>0 | 已验证返回新 token（refreshToken 轮换） | PASS |  |
 | AUTH-006 | logout | 已登录 | POST /api/auth/logout | 200，登出成功或明确未实现 | 200，message=Logout successful | PASS |  |
 
 ### 5.2 权限与越权（RBAC）
@@ -156,9 +156,9 @@
 | BB-003 | 报销模块缺少后端权限控制（可越权创建/修改/审批） | S1 | 安全/RBAC | 对 /api/expenses/* 接口未做细粒度权限校验，存在越权风险 | 已修复（补齐权限校验） |
 
 风险评级（本轮）：
-- 高风险：refresh token 为占位实现，logout 不会使 accessToken 立即失效（若发布到生产需明确会话/续期/撤销策略）
 - 中风险：权限校验在前端 DEV 环境跳过（可能掩盖越权问题，需要确保生产配置与后端授权一致）
 - 中风险：兼容性/性能未做多浏览器与压测（需上线前补齐最低保障）
+- 低风险：已引入 accessToken 撤销黑名单与 refresh token 存储/轮换，需要运维侧定期清理过期记录（或用后台作业自动清理）
 
 ## 8. 覆盖率分析（黑盒视角）
 覆盖口径：按“用户可见模块 × 覆盖维度（正常/异常/边界/安全/性能）”统计。

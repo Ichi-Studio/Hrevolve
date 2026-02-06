@@ -54,6 +54,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!)),
             ClockSkew = TimeSpan.Zero
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var jti = context.Principal?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti)?.Value
+                          ?? context.Principal?.FindFirst("jti")?.Value;
+
+                if (string.IsNullOrWhiteSpace(jti)) return;
+
+                var db = context.HttpContext.RequestServices.GetRequiredService<Hrevolve.Infrastructure.Persistence.HrevolveDbContext>();
+                var revoked = await db.RevokedAccessTokens.IgnoreQueryFilters()
+                    .AnyAsync(x => x.Jti == jti, context.HttpContext.RequestAborted);
+
+                if (revoked)
+                {
+                    context.Fail("Token已被撤销");
+                }
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
