@@ -16,7 +16,10 @@ const fetchRecords = async () => {
   } catch { /* ignore */ } finally { loading.value = false; }
 };
 
-const formatMoney = (n: number) => new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(n);
+const formatMoney = (amount: unknown) => {
+  const n = typeof amount === 'number' ? amount : Number(amount);
+  return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(Number.isFinite(n) ? n : 0);
+};
 const getStatusType = (s: string) => ({ Draft: 'info', Calculated: 'warning', Approved: '', Paid: 'success' }[s] || 'info');
 
 // 状态标签映射 - 使用 computed 实现响应式翻译
@@ -34,12 +37,12 @@ onMounted(() => fetchRecords());
   <div class="records-view">
     <el-card>
       <template #header><span>{{ t('payrollAdmin.records') }}</span></template>
-      <el-table :data="records" v-loading="loading" stripe>
-        <el-table-column prop="employeeName" :label="t('schedule.employee')" width="100" />
-        <el-table-column prop="periodName" :label="t('payrollAdmin.period')" width="120" />
-        <el-table-column prop="baseSalary" :label="t('payrollAdmin.baseSalary')" width="120"><template #default="{ row }">{{ formatMoney(row.baseSalary) }}</template></el-table-column>
-        <el-table-column prop="netSalary" :label="t('payrollAdmin.netSalary')" width="120"><template #default="{ row }"><span style="color:#1890ff;font-weight:600">{{ formatMoney(row.netSalary) }}</span></template></el-table-column>
-        <el-table-column prop="status" :label="t('common.status')" width="100">
+      <el-table :data="records" v-loading="loading" stripe style="width: 100%">
+        <el-table-column prop="employeeName" :label="t('schedule.employee')" min-width="100" />
+        <el-table-column prop="periodName" :label="t('payrollAdmin.period')" min-width="120" />
+        <el-table-column prop="baseSalary" :label="t('payrollAdmin.baseSalary')" min-width="120"><template #default="{ row }">{{ formatMoney(row.baseSalary) }}</template></el-table-column>
+        <el-table-column prop="netSalary" :label="t('payrollAdmin.netSalary')" min-width="120"><template #default="{ row }"><span style="color:#1890ff;font-weight:600">{{ formatMoney(row.netSalary) }}</span></template></el-table-column>
+        <el-table-column prop="status" :label="t('common.status')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">{{ statusLabels[row.status] || row.status }}</el-tag>
           </template>

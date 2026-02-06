@@ -33,8 +33,9 @@ const showDetail = (record: PayrollRecord) => {
 };
 
 // 格式化金额
-const formatMoney = (amount: number) => {
-  return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(amount);
+const formatMoney = (amount: unknown) => {
+  const n = typeof amount === 'number' ? amount : Number(amount);
+  return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(Number.isFinite(n) ? n : 0);
 };
 
 // 获取状态标签类型
@@ -57,31 +58,31 @@ onMounted(() => { fetchRecords(); });
           </el-select>
         </div>
       </template>
-      <el-table :data="records" v-loading="loading" stripe>
-        <el-table-column prop="periodName" :label="t('payroll.period')" width="120" />
-        <el-table-column prop="baseSalary" :label="t('payroll.baseSalary')" width="120">
+      <el-table :data="records" v-loading="loading" stripe style="width: 100%">
+        <el-table-column prop="periodName" :label="t('payroll.period')" min-width="120" />
+        <el-table-column prop="baseSalary" :label="t('payroll.baseSalary')" min-width="120">
           <template #default="{ row }">{{ formatMoney(row.baseSalary) }}</template>
         </el-table-column>
-        <el-table-column prop="bonus" :label="t('payroll.bonus')" width="100">
+        <el-table-column prop="bonus" :label="t('payroll.bonus')" min-width="100">
           <template #default="{ row }">{{ formatMoney(row.bonus) }}</template>
         </el-table-column>
-        <el-table-column prop="deductions" :label="t('payroll.deductions')" width="100">
+        <el-table-column prop="deductions" :label="t('payroll.deductions')" min-width="100">
           <template #default="{ row }">{{ formatMoney(row.deductions) }}</template>
         </el-table-column>
-        <el-table-column prop="tax" :label="t('payroll.tax')" width="100">
+        <el-table-column prop="tax" :label="t('payroll.tax')" min-width="100">
           <template #default="{ row }">{{ formatMoney(row.tax) }}</template>
         </el-table-column>
-        <el-table-column prop="netSalary" :label="t('payroll.netSalary')" width="120">
+        <el-table-column prop="netSalary" :label="t('payroll.netSalary')" min-width="120">
           <template #default="{ row }">
             <span style="color: #1890ff; font-weight: 600">{{ formatMoney(row.netSalary) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" :label="t('common.status')" width="100">
+        <el-table-column prop="status" :label="t('common.status')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">{{ t(`payroll.status${row.status}`) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="t('common.actions')" width="80">
+        <el-table-column :label="t('common.actions')" width="80" fixed="right">
           <template #default="{ row }">
             <el-button text type="primary" size="small" @click="showDetail(row)">{{ t('payroll.detail') }}</el-button>
           </template>
