@@ -23,13 +23,13 @@ onMounted(() => fetchShifts());
   <div class="shifts-view">
     <el-card>
       <template #header><span>{{ t('shifts.management') }}</span></template>
-      <el-table :data="shifts" v-loading="loading" stripe>
-        <el-table-column prop="code" :label="t('shifts.code')" width="120" />
-        <el-table-column prop="name" :label="t('shifts.name')" width="150" />
-        <el-table-column prop="startTime" :label="t('shifts.startTime')" width="120" />
-        <el-table-column prop="endTime" :label="t('shifts.endTime')" width="120" />
-        <el-table-column prop="breakMinutes" :label="t('shifts.breakMinutes')" width="120" />
-        <el-table-column prop="isFlexible" :label="t('shifts.isFlexible')">
+      <el-table :data="shifts" v-loading="loading" stripe style="width: 100%">
+        <el-table-column prop="code" :label="t('shifts.code')" min-width="120" />
+        <el-table-column prop="name" :label="t('shifts.name')" min-width="150" />
+        <el-table-column prop="startTime" :label="t('shifts.startTime')" min-width="120" />
+        <el-table-column prop="endTime" :label="t('shifts.endTime')" min-width="120" />
+        <el-table-column prop="breakMinutes" :label="t('shifts.breakMinutes')" min-width="120" />
+        <el-table-column prop="isFlexible" :label="t('shifts.isFlexible')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="row.isFlexible ? 'success' : 'info'" size="small">{{ row.isFlexible ? t('common.yes') : t('common.no') }}</el-tag>
           </template>

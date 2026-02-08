@@ -816,38 +816,62 @@ $header-height: 64px;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
-      background: rgba(212, 175, 55, 0.06);
-      border: 1px solid rgba(212, 175, 55, 0.16);
+      overflow: hidden;
+      margin-right: 4px;
       
+      // 渐变黑灰背景 - 增加质感
+      background: linear-gradient(145deg, rgba(40, 40, 40, 0.6) 0%, rgba(20, 20, 20, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      
+      // 渐变层
       &::before {
         content: '';
         position: absolute;
-        inset: 0;
-        border-radius: 8px;
-        background: rgba(212, 175, 55, 0.12);
-        opacity: 0;
-        transition: opacity 0.3s;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+          rgba(212, 175, 55, 0.05) 0%, 
+          rgba(212, 175, 55, 0.15) 100%
+        );
+        transform: translateX(-100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 0;
       }
       
+      // 内部图标样式 - 降低默认清晰度
+      :deep(svg) {
+        position: relative;
+        z-index: 1;
+        transition: transform 0.3s ease, opacity 0.3s ease, color 0.3s ease;
+        opacity: 0.7; // 默认稍微淡一点
+      }
+
       &:hover {
         color: $gold-primary;
-        border-color: rgba(212, 175, 55, 0.32);
-        transform: translateY(-1px);
         
         &::before {
-          opacity: 1;
+          transform: translateX(0);
+        }
+        
+        :deep(svg) {
+          transform: scale(1.1);
+          opacity: 1; // 悬停时恢复清晰
         }
       }
       
       &:active {
-        transform: translateY(0);
+        transform: scale(0.95);
       }
 
       &:focus-visible {
         outline: 2px solid rgba(212, 175, 55, 0.5);
         outline-offset: 2px;
+        color: $gold-primary;
       }
     }
   }

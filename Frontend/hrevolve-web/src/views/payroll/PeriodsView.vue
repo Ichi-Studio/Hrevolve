@@ -27,13 +27,13 @@ onMounted(() => fetchPeriods());
   <div class="periods-view">
     <el-card>
       <template #header><span>{{ t('payrollAdmin.periods') }}</span></template>
-      <el-table :data="periods" v-loading="loading" stripe>
-        <el-table-column prop="name" :label="t('payrollAdmin.periodName')" width="150" />
-        <el-table-column prop="year" :label="t('payrollAdmin.year')" width="80" />
-        <el-table-column prop="month" :label="t('payrollAdmin.month')" width="80" />
-        <el-table-column prop="startDate" :label="t('payrollAdmin.startDate')" width="120"><template #default="{ row }">{{ formatDate(row.startDate) }}</template></el-table-column>
-        <el-table-column prop="endDate" :label="t('payrollAdmin.endDate')" width="120"><template #default="{ row }">{{ formatDate(row.endDate) }}</template></el-table-column>
-        <el-table-column prop="status" :label="t('common.status')" width="100"><template #default="{ row }"><el-tag :type="getStatusType(row.status)" size="small">{{ row.status }}</el-tag></template></el-table-column>
+      <el-table :data="periods" v-loading="loading" stripe style="width: 100%">
+        <el-table-column prop="name" :label="t('payrollAdmin.periodName')" min-width="150" />
+        <el-table-column prop="year" :label="t('payrollAdmin.year')" min-width="80" />
+        <el-table-column prop="month" :label="t('payrollAdmin.month')" min-width="80" />
+        <el-table-column prop="startDate" :label="t('payrollAdmin.startDate')" min-width="120"><template #default="{ row }">{{ formatDate(row.startDate) }}</template></el-table-column>
+        <el-table-column prop="endDate" :label="t('payrollAdmin.endDate')" min-width="120"><template #default="{ row }">{{ formatDate(row.endDate) }}</template></el-table-column>
+        <el-table-column prop="status" :label="t('common.status')" min-width="100"><template #default="{ row }"><el-tag :type="getStatusType(row.status)" size="small">{{ row.status }}</el-tag></template></el-table-column>
       </el-table>
     </el-card>
   </div>

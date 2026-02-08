@@ -81,17 +81,17 @@ onMounted(() => fetchEmployees());
           @row-click="handleRowClick"
           height="calc(100vh - 240px)"
         >
-          <el-table-column prop="employeeNo" :label="t('employee.employeeNo')" width="100" />
-          <el-table-column prop="fullName" :label="t('employee.name')" width="120" />
+          <el-table-column prop="employeeNo" :label="t('employee.employeeNo')" min-width="100" />
+          <el-table-column prop="fullName" :label="t('employee.name')" min-width="120" />
           <el-table-column prop="email" :label="t('employee.email')" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="departmentName" :label="t('employee.department')" width="150" />
-          <el-table-column prop="positionName" :label="t('employee.position')" width="150" />
-          <el-table-column prop="status" :label="t('employee.status')" width="100">
+          <el-table-column prop="departmentName" :label="t('employee.department')" min-width="150" />
+          <el-table-column prop="positionName" :label="t('employee.position')" min-width="150" />
+          <el-table-column prop="status" :label="t('employee.status')" min-width="100">
             <template #default="{ row }">
               <el-tag :type="getStatusType(row.status)" size="small">{{ t(`employee.status${row.status}`) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="hireDate" :label="t('employee.hireDate')" width="120">
+          <el-table-column prop="hireDate" :label="t('employee.hireDate')" min-width="120">
             <template #default="{ row }">
               {{ formatDate(row.hireDate) }}
             </template>

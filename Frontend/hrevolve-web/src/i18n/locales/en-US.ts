@@ -654,6 +654,8 @@ export default {
       website: 'Please enter company website',
       address: 'Please enter company address',
     },
+    previewHint: 'Real-time Preview',
+    previewCard: 'Company Card Preview',
   },
   // 语言和货币选项
   languageOptions: {

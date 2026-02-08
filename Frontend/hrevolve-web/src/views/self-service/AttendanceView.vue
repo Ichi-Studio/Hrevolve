@@ -141,44 +141,44 @@ onMounted(() => {
     
     <!-- 记录列表 -->
     <el-card>
-      <el-table :data="records" v-loading="loading" stripe>
+      <el-table :data="records" v-loading="loading" stripe style="width: 100%">
         <template #empty>
           <el-empty :description="t('common.noData')" />
         </template>
-        <el-table-column prop="date" :label="t('attendance.date')" width="120">
+        <el-table-column prop="date" :label="t('attendance.date')" min-width="120">
           <template #default="{ row }">
             {{ formatDate(row.date) }}
           </template>
         </el-table-column>
-        <el-table-column prop="shiftName" :label="t('attendance.shift')" width="100" />
-        <el-table-column prop="checkInTime" :label="t('attendance.checkInTime')" width="100">
+        <el-table-column prop="shiftName" :label="t('attendance.shift')" min-width="100" />
+        <el-table-column prop="checkInTime" :label="t('attendance.checkInTime')" min-width="100">
           <template #default="{ row }">
             {{ formatTime(row.checkInTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="checkOutTime" :label="t('attendance.checkOutTime')" width="100">
+        <el-table-column prop="checkOutTime" :label="t('attendance.checkOutTime')" min-width="100">
           <template #default="{ row }">
             {{ formatTime(row.checkOutTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="workHours" :label="t('attendance.workHours')" width="100">
+        <el-table-column prop="workHours" :label="t('attendance.workHours')" min-width="100">
           <template #default="{ row }">
             {{ row.workHours ? `${row.workHours}h` : '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="overtimeHours" :label="t('attendance.overtimeHours')" width="100">
+        <el-table-column prop="overtimeHours" :label="t('attendance.overtimeHours')" min-width="100">
           <template #default="{ row }">
             {{ row.overtimeHours ? `${row.overtimeHours}h` : '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" :label="t('common.status')" width="100">
+        <el-table-column prop="status" :label="t('common.status')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">
               {{ t(`attendance.status${row.status}`) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" :label="t('common.remark')" />
+        <el-table-column prop="remark" :label="t('common.remark')" min-width="150" />
       </el-table>
     </el-card>
   </div>

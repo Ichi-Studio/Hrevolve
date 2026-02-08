@@ -82,23 +82,23 @@ onMounted(() => fetchData());
       </template>
       
       <el-table v-loading="loading" :data="records" stripe show-summary :summary-method="getSummary">
-        <el-table-column prop="employeeName" :label="t('tax.employee')" width="120" />
-        <el-table-column prop="period" :label="t('tax.taxPeriod')" width="100">
+        <el-table-column prop="employeeName" :label="t('tax.employee')" min-width="120" />
+        <el-table-column prop="period" :label="t('tax.taxPeriod')" min-width="100">
           <template #default="{ row }">{{ row.year }}-{{ String(row.month).padStart(2, '0') }}</template>
         </el-table-column>
-        <el-table-column prop="grossIncome" :label="t('tax.grossIncome')" width="120">
+        <el-table-column prop="grossIncome" :label="t('tax.grossIncome')" min-width="120">
           <template #default="{ row }">¥{{ row.grossIncome?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="deductions" :label="t('tax.deductionsCol')" width="120">
+        <el-table-column prop="deductions" :label="t('tax.deductionsCol')" min-width="120">
           <template #default="{ row }">¥{{ row.deductions?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="taxableIncome" :label="t('tax.taxableIncome')" width="120">
+        <el-table-column prop="taxableIncome" :label="t('tax.taxableIncome')" min-width="120">
           <template #default="{ row }">¥{{ row.taxableIncome?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="taxAmount" :label="t('tax.taxAmount')" width="120">
+        <el-table-column prop="taxAmount" :label="t('tax.taxAmount')" min-width="120">
           <template #default="{ row }">¥{{ row.taxAmount?.toLocaleString() }}</template>
         </el-table-column>
-        <el-table-column prop="status" :label="t('common.status')" width="100">
+        <el-table-column prop="status" :label="t('common.status')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'filed' ? 'success' : row.status === 'pending' ? 'warning' : 'info'" size="small">
               {{ row.status === 'filed' ? t('tax.statusFiled') : row.status === 'pending' ? t('tax.statusPending') : t('tax.statusDraft') }}

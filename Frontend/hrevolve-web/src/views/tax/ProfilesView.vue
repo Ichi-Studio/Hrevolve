@@ -86,15 +86,15 @@ onMounted(() => fetchData());
         </div>
       </template>
       
-      <el-table v-loading="loading" :data="profiles" stripe>
-        <el-table-column prop="employeeName" :label="t('tax.employee')" width="120" />
-      <el-table-column prop="taxId" :label="t('tax.taxNumber')" width="180" />
-        <el-table-column prop="taxType" :label="t('tax.taxType')" width="120">
+      <el-table v-loading="loading" :data="profiles" stripe style="width: 100%">
+        <el-table-column prop="employeeName" :label="t('tax.employee')" min-width="120" />
+      <el-table-column prop="taxId" :label="t('tax.taxNumber')" min-width="180" />
+        <el-table-column prop="taxType" :label="t('tax.taxType')" min-width="120">
           <template #default="{ row }">
           <el-tag size="small">{{ row.taxType === 'Resident' ? t('tax.resident') : t('tax.nonResident') }}</el-tag>
           </template>
         </el-table-column>
-      <el-table-column prop="effectiveYear" :label="t('tax.taxYear')" width="120" />
+      <el-table-column prop="effectiveYear" :label="t('tax.taxYear')" min-width="120" />
       <el-table-column prop="specialDeductions" :label="t('tax.specialDeductionsCol')" min-width="150">
         <template #default="{ row }">¥{{ getSpecialDeductionTotal(row.specialDeductions).toLocaleString() }}</template>
       </el-table-column>

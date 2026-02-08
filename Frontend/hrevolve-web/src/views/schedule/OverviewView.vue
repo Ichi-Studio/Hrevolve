@@ -88,12 +88,12 @@ onMounted(() => fetchData());
         <span class="card-title">{{ t('schedule.todaySchedule') }}</span>
       </template>
       <el-table v-loading="loading" :data="todaySchedules" stripe>
-        <el-table-column prop="employeeName" :label="t('schedule.employee')" width="120" />
-        <el-table-column prop="departmentName" :label="t('employee.department')" width="120" />
-        <el-table-column prop="shiftName" :label="t('schedule.shift')" width="100" />
-        <el-table-column prop="startTime" :label="t('schedule.startTime')" width="100" />
-        <el-table-column prop="endTime" :label="t('schedule.endTime')" width="100" />
-        <el-table-column prop="status" :label="t('common.status')" width="100">
+        <el-table-column prop="employeeName" :label="t('schedule.employee')" min-width="120" />
+        <el-table-column prop="departmentName" :label="t('employee.department')" min-width="120" />
+        <el-table-column prop="shiftName" :label="t('schedule.shift')" min-width="100" />
+        <el-table-column prop="startTime" :label="t('schedule.startTime')" min-width="100" />
+        <el-table-column prop="endTime" :label="t('schedule.endTime')" min-width="100" />
+        <el-table-column prop="status" :label="t('common.status')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'checked_in' ? 'success' : 'info'" size="small">
               {{ row.status === 'checked_in' ? t('schedule.checkedIn') : t('schedule.notCheckedIn') }}

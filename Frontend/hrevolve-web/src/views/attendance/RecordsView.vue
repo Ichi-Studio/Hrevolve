@@ -41,15 +41,15 @@ onMounted(() => fetchRecords());
   <div class="records-view">
     <el-card>
       <template #header><span>{{ t('attendanceAdmin.records') }}</span></template>
-      <el-table :data="records" v-loading="loading" stripe>
+      <el-table :data="records" v-loading="loading" stripe style="width: 100%">
         <template #empty>
           <el-empty :description="t('common.noData')" />
         </template>
-        <el-table-column prop="employeeName" :label="t('schedule.employee')" width="100" />
-        <el-table-column prop="date" :label="t('attendance.date')" width="120"><template #default="{ row }">{{ formatDate(row.date) }}</template></el-table-column>
-        <el-table-column prop="checkInTime" :label="t('attendanceAdmin.checkIn')" width="100"><template #default="{ row }">{{ formatTime(row.checkInTime) }}</template></el-table-column>
-        <el-table-column prop="checkOutTime" :label="t('attendanceAdmin.checkOut')" width="100"><template #default="{ row }">{{ formatTime(row.checkOutTime) }}</template></el-table-column>
-        <el-table-column prop="status" :label="t('common.status')" width="100">
+        <el-table-column prop="employeeName" :label="t('schedule.employee')" min-width="120" />
+        <el-table-column prop="date" :label="t('attendance.date')" min-width="120"><template #default="{ row }">{{ formatDate(row.date) }}</template></el-table-column>
+        <el-table-column prop="checkInTime" :label="t('attendanceAdmin.checkIn')" min-width="100"><template #default="{ row }">{{ formatTime(row.checkInTime) }}</template></el-table-column>
+        <el-table-column prop="checkOutTime" :label="t('attendanceAdmin.checkOut')" min-width="100"><template #default="{ row }">{{ formatTime(row.checkOutTime) }}</template></el-table-column>
+        <el-table-column prop="status" :label="t('common.status')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">{{ statusLabels[row.status] || row.status }}</el-tag>
           </template>

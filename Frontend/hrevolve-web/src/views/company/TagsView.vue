@@ -23,6 +23,20 @@ const presetColors = [
   '#9B59B6', '#1ABC9C', '#E67E22', '#34495E', '#95A5A6'
 ];
 
+// 计算对比色（黑/白）
+const getContrastColor = (hexcolor: string) => {
+  if (!hexcolor) return '#fff';
+  // 移除 #
+  const hex = hexcolor.replace('#', '');
+  // 转 RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  // 计算亮度 (YIQ)
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? '#000000' : '#ffffff';
+};
+
 // 过滤后的标签
 const filteredTags = computed(() => {
   if (!searchKeyword.value) return tags.value;
@@ -101,7 +115,7 @@ const handleSave = async () => {
 
 <template>
   <div class="tags-view">
-    <el-card>
+    <el-card shadow="never">
       <template #header>
         <div class="card-header">
           <span class="card-title">{{ t('tags.management') }}</span>
@@ -111,7 +125,7 @@ const handleSave = async () => {
               :placeholder="t('tags.searchPlaceholder')"
               :prefix-icon="Search"
               clearable
-              style="width: 200px"
+              class="search-input"
             />
             <el-button type="primary" :icon="Plus" @click="handleAdd">{{ t('tags.addTag') }}</el-button>
           </div>
@@ -123,12 +137,16 @@ const handleSave = async () => {
           <div v-for="(categoryTags, category) in groupedTags" :key="category" class="tag-group">
             <div class="group-title">{{ category }}</div>
             <div class="tag-list">
-              <div v-for="tag in categoryTags" :key="tag.id" class="tag-item">
+              <div v-for="tag in categoryTags" :key="tag.id" class="tag-item" role="presentation">
                 <el-tag
                   :color="tag.color"
-                  :style="{ borderColor: tag.color }"
+                  :style="{ 
+                    borderColor: tag.color,
+                    color: getContrastColor(tag.color)
+                  }"
                   effect="dark"
                   size="large"
+                  class="custom-tag"
                 >
                   {{ tag.name }}
                 </el-tag>
@@ -187,12 +205,56 @@ const handleSave = async () => {
 
 <style scoped lang="scss">
 .tags-view {
+  :deep(.el-card) {
+    border: none;
+    background: transparent;
+    
+    .el-card__header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px 0;
+      margin: 0 20px;
+    }
+    
+    .el-card__body {
+      padding: 20px;
+    }
+  }
+
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    .card-title { font-size: 16px; font-weight: 600; }
-    .header-actions { display: flex; gap: 12px; }
+
+    .card-title { 
+      font-size: 18px; 
+      font-weight: 600; 
+      color: #fff;
+      display: flex;
+      align-items: center;
+      
+      &::before {
+        content: '';
+        width: 4px;
+        height: 18px;
+        background: #D4AF37;
+        margin-right: 12px;
+        border-radius: 2px;
+      }
+    }
+
+    .header-actions { 
+      display: flex; 
+      gap: 16px; 
+      
+      .search-input {
+        width: 240px;
+        transition: width 0.3s;
+        
+        &:focus-within {
+          width: 300px;
+        }
+      }
+    }
   }
   
   .tags-content {
@@ -200,34 +262,64 @@ const handleSave = async () => {
   }
   
   .tag-group {
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     
     .group-title {
       font-size: 14px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.65);
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.45);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      
+      &::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.05);
+        margin-left: 12px;
+      }
     }
     
     .tag-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
     }
     
     .tag-item {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 8px;
+      padding: 6px;
+      padding-right: 12px;
+      cursor: default;
+      
+      &:hover {
+        .tag-actions {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .custom-tag {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 0 16px;
+        height: 32px;
+        font-weight: 500;
+      }
       
       .tag-actions {
         opacity: 0;
-        transition: opacity 0.2s;
+        transform: translateX(-10px);
+        transition: all 0.2s ease;
+        margin-left: 8px;
+        display: flex;
+        gap: 4px;
       }
-      
-      &:hover .tag-actions { opacity: 1; }
     }
   }
   

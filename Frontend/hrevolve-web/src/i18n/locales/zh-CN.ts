@@ -654,6 +654,8 @@ export default {
       website: '请输入公司网站',
       address: '请输入公司地址',
     },
+    previewHint: '实时预览效果',
+    previewCard: '公司名片预览',
   },
   // 语言和货币选项
   languageOptions: {

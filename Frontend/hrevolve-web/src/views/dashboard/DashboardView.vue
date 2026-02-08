@@ -14,6 +14,14 @@ const { t, locale } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
+const welcomeName = computed(() => {
+  return (
+    authStore.user?.displayName ||
+    authStore.user?.username ||
+    'User'
+  );
+});
+
 // 统计卡片数据 - 使用 computed 确保语言切换时更新
 const stats = computed(() => [
   { titleKey: 'dashboard.todayAttendance', value: '--', icon: markRaw(Clock), color: '#D4AF37' },
@@ -48,7 +56,7 @@ const formattedDate = computed(() => {
     <div class="welcome-section">
       <div class="welcome-content">
         <div class="welcome-text">
-          <h1>{{ t('dashboard.welcome') }}，{{ authStore.user?.username || 'User' }} 👋</h1>
+          <h1>{{ t('dashboard.welcome') }}，{{ welcomeName }} 👋</h1>
           <p>{{ formattedDate }}</p>
         </div>
       </div>
