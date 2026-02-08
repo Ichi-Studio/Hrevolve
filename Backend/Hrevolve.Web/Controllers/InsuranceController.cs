@@ -8,6 +8,9 @@ namespace Hrevolve.Web.Controllers;
 [Authorize]
 public class InsuranceController : ControllerBase
 {
+    private static readonly object BenefitsLock = new();
+    private static List<BenefitSimpleDto> BenefitsCache = SeedBenefits();
+
     /// <summary>
     /// 获取保险统计
     /// </summary>
@@ -101,30 +104,63 @@ public class InsuranceController : ControllerBase
     [HttpGet("benefits-simple")]
     public IActionResult GetBenefits()
     {
-        return Ok(new[]
+        lock (BenefitsLock)
         {
-            new { id = Guid.NewGuid(), name = "餐饮补贴", type = "meal", amount = 500m, isActive = true, description = "每月餐饮补贴" },
-            new { id = Guid.NewGuid(), name = "交通补贴", type = "transport", amount = 300m, isActive = true, description = "每月交通补贴" },
-            new { id = Guid.NewGuid(), name = "通讯补贴", type = "communication", amount = 200m, isActive = true, description = "每月通讯补贴" }
-        });
+            return Ok(BenefitsCache.ToList());
+        }
     }
 
     /// <summary>
     /// 创建福利项目
     /// </summary>
     [HttpPost("benefits-simple")]
-    public IActionResult CreateBenefit([FromBody] object data)
+    public IActionResult CreateBenefit([FromBody] BenefitSimpleUpsert data)
     {
-        return Ok(new { id = Guid.NewGuid(), message = "创建成功" });
+        if (string.IsNullOrWhiteSpace(data.name) || string.IsNullOrWhiteSpace(data.type))
+        {
+            return BadRequest(new { message = "name/type 不能为空" });
+        }
+
+        var created = new BenefitSimpleDto(
+            Guid.NewGuid(),
+            data.name.Trim(),
+            data.type.Trim(),
+            data.amount ?? 0m,
+            data.isActive ?? true,
+            data.description);
+
+        lock (BenefitsLock)
+        {
+            BenefitsCache = [created, ..BenefitsCache];
+        }
+
+        return Ok(created);
     }
 
     /// <summary>
     /// 更新福利项目
     /// </summary>
     [HttpPut("benefits-simple/{id:guid}")]
-    public IActionResult UpdateBenefit(Guid id, [FromBody] object data)
+    public IActionResult UpdateBenefit(Guid id, [FromBody] BenefitSimpleUpsert data)
     {
-        return Ok(new { message = "更新成功" });
+        lock (BenefitsLock)
+        {
+            var idx = BenefitsCache.FindIndex(x => x.id == id);
+            if (idx < 0) return NotFound();
+
+            var old = BenefitsCache[idx];
+            var updated = old with
+            {
+                name = string.IsNullOrWhiteSpace(data.name) ? old.name : data.name.Trim(),
+                type = string.IsNullOrWhiteSpace(data.type) ? old.type : data.type.Trim(),
+                amount = data.amount ?? old.amount,
+                isActive = data.isActive ?? old.isActive,
+                description = data.description ?? old.description
+            };
+
+            BenefitsCache[idx] = updated;
+            return Ok(updated);
+        }
     }
 
     /// <summary>
@@ -133,6 +169,20 @@ public class InsuranceController : ControllerBase
     [HttpDelete("benefits-simple/{id:guid}")]
     public IActionResult DeleteBenefit(Guid id)
     {
-        return Ok(new { message = "删除成功" });
+        lock (BenefitsLock)
+        {
+            BenefitsCache = BenefitsCache.Where(x => x.id != id).ToList();
+        }
+        return Ok(new { message = "ok" });
     }
+
+    private static List<BenefitSimpleDto> SeedBenefits() =>
+    [
+        new(Guid.NewGuid(), "餐饮补贴", "meal", 500m, true, "每月餐饮补贴"),
+        new(Guid.NewGuid(), "交通补贴", "transport", 300m, true, "每月交通补贴"),
+        new(Guid.NewGuid(), "通讯补贴", "communication", 200m, true, "每月通讯补贴")
+    ];
+
+    public record BenefitSimpleDto(Guid id, string name, string type, decimal amount, bool isActive, string? description);
+    public record BenefitSimpleUpsert(string? name, string? type, decimal? amount, string? description, bool? isActive);
 }

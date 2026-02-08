@@ -220,12 +220,24 @@ public class AuthController(IMediator mediator, Hrevolve.Infrastructure.Persiste
             roles = roles.Contains("Admin") ? roles : ["Admin", ..roles];
         }
 
+        var displayName = user.Username;
+        if (user.EmployeeId.HasValue)
+        {
+            var employee = await context.Employees.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(e => e.Id == user.EmployeeId.Value, cancellationToken);
+
+            if (employee != null)
+            {
+                displayName = employee.FullName;
+            }
+        }
+
         return Ok(new
         {
             id = user.Id,
             username = user.Username,
             email = user.Email,
-            displayName = user.Username,
+            displayName,
             roles,
             permissions,
             tenantId = user.TenantId,

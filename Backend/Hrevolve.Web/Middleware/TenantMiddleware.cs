@@ -40,21 +40,29 @@ public class TenantMiddleware(RequestDelegate next, ILogger<TenantMiddleware> lo
         if (!string.IsNullOrEmpty(tenantIdClaim) && Guid.TryParse(tenantIdClaim, out var tenantId))
         {
             var tenantInfo = await tenantResolver.GetByIdAsync(tenantId);
-            if (tenantInfo != null && tenantInfo.IsActive)
+            if (tenantInfo == null)
             {
-                tenantContextAccessor.TenantContext = new TenantContext(tenantInfo.Id, tenantInfo.Code);
-                logger.LogDebug("租户上下文已从JWT设置: {TenantId} ({TenantCode})", tenantInfo.Id, tenantInfo.Code);
-                
-                try
-                {
-                    await next(context);
-                }
-                finally
-                {
-                    tenantContextAccessor.TenantContext = null;
-                }
-                return;
+                throw new UnauthorizedException("租户不存在，请重新登录");
             }
+
+            if (!tenantInfo.IsActive)
+            {
+                throw new UnauthorizedException("租户已被禁用");
+            }
+
+            tenantContextAccessor.TenantContext = new TenantContext(tenantInfo.Id, tenantInfo.Code);
+            logger.LogDebug("租户上下文已从JWT设置: {TenantId} ({TenantCode})", tenantInfo.Id, tenantInfo.Code);
+            
+            try
+            {
+                await next(context);
+            }
+            finally
+            {
+                tenantContextAccessor.TenantContext = null;
+            }
+
+            return;
         }
         
         // 尝试从请求中解析租户
@@ -67,7 +75,15 @@ public class TenantMiddleware(RequestDelegate next, ILogger<TenantMiddleware> lo
         }
         
         // 解析租户
-        var tenant = await tenantResolver.ResolveAsync(tenantIdentifier);
+        TenantInfo? tenant;
+        if (Guid.TryParse(tenantIdentifier, out var parsedTenantId))
+        {
+            tenant = await tenantResolver.GetByIdAsync(parsedTenantId);
+        }
+        else
+        {
+            tenant = await tenantResolver.ResolveAsync(tenantIdentifier);
+        }
         
         if (tenant == null)
         {
