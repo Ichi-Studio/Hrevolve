@@ -73,6 +73,11 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+/.tmpbuild/
+*.sqlite
+*.sqlite3
+msbuild.pp.xml
+.vercel/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

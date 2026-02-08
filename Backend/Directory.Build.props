@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <GenerateMSBuildEditorConfigFile>true</GenerateMSBuildEditorConfigFile>
+    <RazorLangVersion>8.0</RazorLangVersion>
+  </PropertyGroup>
+</Project>
