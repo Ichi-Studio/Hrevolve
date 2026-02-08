@@ -30,17 +30,18 @@ public class DemoDataSeeder(HrevolveDbContext context, ILogger<DemoDataSeeder> l
 
         var tenantId = tenant.Id;
 
+        var random = new Random(SeedRandom);
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var nowUtc = DateTime.UtcNow;
+
         var hasAnyBusinessData = await context.Employees.IgnoreQueryFilters()
             .AnyAsync(e => e.TenantId == tenantId, cancellationToken);
         if (hasAnyBusinessData)
         {
-            logger.LogInformation("演示数据已存在，跳过业务数据种子: {TenantCode}", DemoTenantCode);
+            logger.LogInformation("演示数据已存在，尝试补全演示考勤数据: {TenantCode}", DemoTenantCode);
+            await EnsureAttendanceDemoDataAsync(tenantId, random, today, nowUtc, cancellationToken);
             return;
         }
-
-        var random = new Random(SeedRandom);
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var nowUtc = DateTime.UtcNow;
 
         var org = CreateOrganizations(tenantId, random);
         await context.OrganizationUnits.AddRangeAsync(org.AllUnits, cancellationToken);
@@ -92,6 +93,231 @@ public class DemoDataSeeder(HrevolveDbContext context, ILogger<DemoDataSeeder> l
         await context.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("演示数据创建完成: {TenantCode}", DemoTenantCode);
+    }
+
+    private async Task EnsureAttendanceDemoDataAsync(
+        Guid tenantId,
+        Random random,
+        DateOnly today,
+        DateTime nowUtc,
+        CancellationToken cancellationToken)
+    {
+        var employees = await context.Employees.IgnoreQueryFilters()
+            .Where(e => e.TenantId == tenantId)
+            .OrderBy(e => e.EmployeeNumber)
+            .ToListAsync(cancellationToken);
+        if (employees.Count == 0) return;
+
+        var scheduledEmployees = employees.Take(Math.Min(36, employees.Count)).ToList();
+        EnsureScheduledEmployeeNumber(employees, scheduledEmployees, "EMP3001");
+        EnsureScheduledEmployeeNumber(employees, scheduledEmployees, "ADM1001");
+        EnsureScheduledEmployeeNumber(employees, scheduledEmployees, "HR2001");
+
+        var existingShifts = await context.Shifts.IgnoreQueryFilters()
+            .Where(s => s.TenantId == tenantId)
+            .ToListAsync(cancellationToken);
+        var shiftByCode = existingShifts.ToDictionary(s => s.Code, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var desired in CreateShifts(tenantId))
+        {
+            if (!shiftByCode.ContainsKey(desired.Code))
+            {
+                await context.Shifts.AddAsync(desired, cancellationToken);
+                shiftByCode[desired.Code] = desired;
+            }
+        }
+        await context.SaveChangesAsync(cancellationToken);
+
+        var shifts = shiftByCode.Values.ToList();
+        var dayShift = shifts.FirstOrDefault(s => string.Equals(s.Code, "DAY", StringComparison.OrdinalIgnoreCase)) ?? shifts.First();
+        var flexShift = shifts.FirstOrDefault(s => string.Equals(s.Code, "FLEX", StringComparison.OrdinalIgnoreCase)) ?? dayShift;
+        var nightShift = shifts.FirstOrDefault(s => string.Equals(s.Code, "NIGHT", StringComparison.OrdinalIgnoreCase)) ?? dayShift;
+
+        var schedulingWindow = new DateRange(today.AddDays(-90), today);
+
+        var employeeIds = scheduledEmployees.Select(e => e.Id).ToList();
+        var existingSchedules = await context.Schedules.IgnoreQueryFilters()
+            .Where(s => s.TenantId == tenantId)
+            .Where(s => employeeIds.Contains(s.EmployeeId))
+            .Where(s => s.ScheduleDate >= schedulingWindow.Start && s.ScheduleDate <= schedulingWindow.End)
+            .ToListAsync(cancellationToken);
+        var scheduleByKey = existingSchedules.ToDictionary(s => (s.EmployeeId, s.ScheduleDate), s => s);
+
+        var schedulesToAdd = new List<Schedule>();
+        foreach (var employee in scheduledEmployees)
+        {
+            for (var date = schedulingWindow.Start; date <= schedulingWindow.End; date = date.AddDays(1))
+            {
+                if (scheduleByKey.ContainsKey((employee.Id, date))) continue;
+
+                var isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                if (isWeekend)
+                {
+                    var rest = Schedule.Create(tenantId, employee.Id, dayShift.Id, date, true);
+                    scheduleByKey[(employee.Id, date)] = rest;
+                    schedulesToAdd.Add(rest);
+                    continue;
+                }
+
+                var dice = CreateStableRandom(employee.Id, date, 11).NextDouble();
+                var shiftId = dice switch
+                {
+                    < 0.75 => dayShift.Id,
+                    < 0.95 => flexShift.Id,
+                    _ => nightShift.Id
+                };
+
+                var sched = Schedule.Create(tenantId, employee.Id, shiftId, date, false);
+                scheduleByKey[(employee.Id, date)] = sched;
+                schedulesToAdd.Add(sched);
+            }
+        }
+
+        if (schedulesToAdd.Count > 0)
+        {
+            await context.Schedules.AddRangeAsync(schedulesToAdd, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        var existingRecords = await context.AttendanceRecords.IgnoreQueryFilters()
+            .Where(r => r.TenantId == tenantId)
+            .Where(r => employeeIds.Contains(r.EmployeeId))
+            .Where(r => r.AttendanceDate >= schedulingWindow.Start && r.AttendanceDate <= schedulingWindow.End)
+            .ToListAsync(cancellationToken);
+        var recordByKey = existingRecords.ToDictionary(r => (r.EmployeeId, r.AttendanceDate), r => r);
+
+        var shiftById = shifts.ToDictionary(s => s.Id, s => s);
+        var recordsToAdd = new List<AttendanceRecord>();
+
+        foreach (var schedule in scheduleByKey.Values.Where(s => !s.IsRestDay))
+        {
+            if (recordByKey.ContainsKey((schedule.EmployeeId, schedule.ScheduleDate))) continue;
+
+            var r = CreateDemoAttendanceRecord(tenantId, schedule, shiftById, nowUtc);
+            recordByKey[(schedule.EmployeeId, schedule.ScheduleDate)] = r;
+            recordsToAdd.Add(r);
+        }
+
+        if (recordsToAdd.Count > 0)
+        {
+            await context.AttendanceRecords.AddRangeAsync(recordsToAdd, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        logger.LogInformation("演示考勤数据补全完成: Shifts={Shifts}, Schedules+={SchedulesAdded}, Records+={RecordsAdded}", shifts.Count, schedulesToAdd.Count, recordsToAdd.Count);
+    }
+
+    private static void EnsureScheduledEmployeeNumber(List<Employee> allEmployees, List<Employee> scheduledEmployees, string employeeNumber)
+    {
+        var employee = allEmployees.FirstOrDefault(e => e.EmployeeNumber == employeeNumber);
+        if (employee == null) return;
+        if (scheduledEmployees.Any(e => e.Id == employee.Id)) return;
+
+        if (scheduledEmployees.Count == 0)
+        {
+            scheduledEmployees.Add(employee);
+            return;
+        }
+
+        var reservedIds = new HashSet<Guid>(
+            scheduledEmployees
+                .Where(e => e.EmployeeNumber is "EMP3001" or "ADM1001" or "HR2001")
+                .Select(e => e.Id));
+
+        var replaceIndex = scheduledEmployees.FindLastIndex(e => !reservedIds.Contains(e.Id));
+        if (replaceIndex < 0) replaceIndex = scheduledEmployees.Count - 1;
+        scheduledEmployees[replaceIndex] = employee;
+    }
+
+    private static AttendanceRecord CreateDemoAttendanceRecord(
+        Guid tenantId,
+        Schedule schedule,
+        Dictionary<Guid, Shift> shiftById,
+        DateTime nowUtc)
+    {
+        var random = CreateStableRandom(schedule.EmployeeId, schedule.ScheduleDate, 21);
+        var record = AttendanceRecord.Create(tenantId, schedule.EmployeeId, schedule.ScheduleDate, schedule.Id);
+
+        var dice = random.NextDouble();
+        if (dice < 0.08)
+        {
+            return record;
+        }
+
+        shiftById.TryGetValue(schedule.ShiftId, out var shift);
+        var methodRoll = random.NextDouble();
+        var method = methodRoll switch
+        {
+            < 0.7 => CheckInMethod.App,
+            < 0.9 => CheckInMethod.WiFi,
+            < 0.97 => CheckInMethod.Device,
+            _ => CheckInMethod.Web
+        };
+
+        var localDate = DateTime.SpecifyKind(schedule.ScheduleDate.ToDateTime(TimeOnly.FromTimeSpan(TimeSpan.Zero)), DateTimeKind.Local);
+        var workStart = localDate;
+        if (shift != null)
+        {
+            workStart = localDate.AddHours(shift.StartTime.Hour).AddMinutes(shift.StartTime.Minute);
+        }
+
+        var checkInDelayMinutes = (int)Math.Round(ClampNormal(random, 3, 12, -10, 90));
+        var checkIn = workStart.AddMinutes(checkInDelayMinutes);
+        record.CheckIn(checkIn.ToUniversalTime(), method, "31.2304,121.4737");
+
+        if (dice < 0.18)
+        {
+            if (random.NextDouble() < 0.45)
+            {
+                record.ManualCheckOut(checkIn.AddHours(8).AddMinutes(random.Next(0, 40)).ToUniversalTime(), "补卡：系统异常导致签退缺失");
+                record.Approve(Guid.Empty);
+                SetPrivateProperty(record, "ApprovedAt", nowUtc);
+            }
+            return record;
+        }
+
+        var workEnd = localDate.AddHours(18);
+        var crossDay = false;
+        if (shift != null)
+        {
+            workEnd = localDate.AddHours(shift.EndTime.Hour).AddMinutes(shift.EndTime.Minute);
+            crossDay = shift.CrossDay || shift.EndTime < shift.StartTime;
+        }
+        if (crossDay) workEnd = workEnd.AddDays(1);
+
+        var checkoutDeltaMinutes = (int)Math.Round(ClampNormal(random, -2, 20, -120, 180));
+        var checkOut = workEnd.AddMinutes(checkoutDeltaMinutes);
+        record.CheckOut(checkOut.ToUniversalTime(), method, "31.2304,121.4737");
+
+        if (checkOut > checkIn)
+        {
+            SetPrivateProperty(record, "OvertimeHours", (decimal)Math.Max(0, (checkOut - workEnd).TotalHours));
+        }
+
+        if (random.NextDouble() < 0.12)
+        {
+            SetPrivateProperty(record, "Remarks", $"演示：外出/会议 {random.Next(1, 50)}");
+        }
+
+        if (random.NextDouble() < 0.2)
+        {
+            record.Approve(Guid.Empty);
+            SetPrivateProperty(record, "ApprovedAt", nowUtc);
+        }
+
+        return record;
+    }
+
+    private static Random CreateStableRandom(Guid employeeId, DateOnly date, int salt)
+    {
+        unchecked
+        {
+            var seed = SeedRandom;
+            seed = (seed * 397) ^ employeeId.GetHashCode();
+            seed = (seed * 397) ^ date.GetHashCode();
+            seed = (seed * 397) ^ salt;
+            return new Random(seed);
+        }
     }
 
     public async Task RollbackAsync(CancellationToken cancellationToken = default)
@@ -462,12 +688,33 @@ public class DemoDataSeeder(HrevolveDbContext context, ILogger<DemoDataSeeder> l
         }
 
         var scheduled = employees.Where((_, idx) => idx % 3 == 0).Take(36).ToList();
+        EnsureScheduledEmployee(scheduled, special.RegularEmployee);
+        EnsureScheduledEmployee(scheduled, special.AdminEmployee);
+        EnsureScheduledEmployee(scheduled, special.HrEmployee);
+
         if (!scheduled.Any(e => e.Id == special.RegularEmployee.Id))
         {
             scheduled[0] = special.RegularEmployee;
         }
 
         return new EmployeeSeedResult(employees, histories, scheduled, special.Users);
+    }
+
+    private static void EnsureScheduledEmployee(List<Employee> scheduled, Employee employee)
+    {
+        if (scheduled.Any(e => e.Id == employee.Id)) return;
+        if (scheduled.Count == 0)
+        {
+            scheduled.Add(employee);
+            return;
+        }
+
+        var existingIds = scheduled.Select(e => e.Id).ToHashSet();
+        if (existingIds.Contains(employee.Id)) return;
+
+        var replaceIndex = scheduled.FindLastIndex(e => e.Id != employee.Id);
+        if (replaceIndex < 0) replaceIndex = scheduled.Count - 1;
+        scheduled[replaceIndex] = employee;
     }
 
     private static DemoUsersEmployees CreateDemoUsersEmployees(Guid tenantId, OrganizationSeedResult org, List<Position> positions)

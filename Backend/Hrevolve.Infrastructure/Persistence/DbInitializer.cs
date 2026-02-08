@@ -13,9 +13,16 @@ public class DbInitializer(HrevolveDbContext context, DemoDataSeeder demoDataSee
     {
         try
         {
-            // 应用迁移
-            await context.Database.MigrateAsync();
-            logger.LogInformation("数据库迁移完成");
+            if (context.Database.IsSqlite())
+            {
+                await context.Database.EnsureCreatedAsync();
+                logger.LogInformation("SQLite 数据库 EnsureCreated 完成");
+            }
+            else
+            {
+                await context.Database.MigrateAsync();
+                logger.LogInformation("数据库迁移完成");
+            }
         }
         catch (Exception ex)
         {

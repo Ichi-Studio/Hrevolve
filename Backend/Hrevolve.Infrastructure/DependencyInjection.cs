@@ -15,13 +15,27 @@ public static class DependencyInjection
         // 数据库上下文
         services.AddDbContext<HrevolveDbContext>(options =>
         {
-            options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection"),
-                npgsqlOptions =>
-                {
-                    npgsqlOptions.MigrationsAssembly(typeof(HrevolveDbContext).Assembly.FullName);
-                    npgsqlOptions.EnableRetryOnFailure(3);
-                });
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("ConnectionStrings:DefaultConnection 未配置");
+            }
+
+            if (connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase) ||
+                connectionString.Contains("Filename=", StringComparison.OrdinalIgnoreCase))
+            {
+                options.UseSqlite(connectionString);
+            }
+            else
+            {
+                options.UseNpgsql(
+                    connectionString,
+                    npgsqlOptions =>
+                    {
+                        npgsqlOptions.MigrationsAssembly(typeof(HrevolveDbContext).Assembly.FullName);
+                        npgsqlOptions.EnableRetryOnFailure(3);
+                    });
+            }
         });
         
         // Redis缓存
