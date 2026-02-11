@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Hrevolve.Agent.Configuration;
 using Hrevolve.Agent.Models.Text2Sql;
+using Hrevolve.Agent.Services.Logging;
 using Hrevolve.Agent.Services.Models;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -72,7 +73,7 @@ public class Text2SqlService : IText2SqlService
             var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
             var responseText = response.Text ?? "";
 
-            _logger.LogDebug("LLM 响应: {Response}", responseText);
+            _logger.LogDebug("LLM 响应: {Response}", LogSanitizer.Sanitize(responseText));
 
             // 4. 解析响应
             var queryRequest = ParseResponse(responseText, naturalQuery);
@@ -114,7 +115,10 @@ public class Text2SqlService : IText2SqlService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Text2SQL 转换失败: {Query}", naturalQuery);
+            var safeQuery = naturalQuery
+                .Replace("\r", "\\r", StringComparison.Ordinal)
+                .Replace("\n", "\\n", StringComparison.Ordinal);
+            _logger.LogError(ex, "Text2SQL 转换失败: {Query}", safeQuery);
             return new Text2SqlResult
             {
                 Success = false,
@@ -241,7 +245,7 @@ public class Text2SqlService : IText2SqlService
 
             if (jsonStart < 0 || jsonEnd < 0 || jsonEnd <= jsonStart)
             {
-                _logger.LogWarning("响应中未找到有效的 JSON: {Response}", responseText);
+                _logger.LogWarning("响应中未找到有效的 JSON: {Response}", LogSanitizer.Sanitize(responseText));
                 return null;
             }
 
@@ -266,7 +270,7 @@ public class Text2SqlService : IText2SqlService
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "JSON 解析失败: {Response}", responseText);
+            _logger.LogWarning(ex, "JSON 解析失败: {Response}", LogSanitizer.Sanitize(responseText));
             return null;
         }
     }
@@ -292,4 +296,5 @@ public class Text2SqlService : IText2SqlService
             }
         }
     }
+
 }

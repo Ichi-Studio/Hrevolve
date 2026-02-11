@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Hrevolve.Agent.Configuration;
+using Hrevolve.Agent.Services.Logging;
 using Hrevolve.Agent.Services.Models;
 
 namespace Hrevolve.Agent.Services.Routing;
@@ -94,14 +95,14 @@ public sealed class SemanticRouter : IAgentSemanticRouter
             var json = ExtractJsonObject(text);
             if (json is null)
             {
-                _logger.LogWarning("路由 LLM 未返回有效 JSON（model={Model}）: {Text}", routerModel, text);
+                _logger.LogWarning("路由 LLM 未返回有效 JSON（model={Model}）: {Text}", routerModel, LogSanitizer.Sanitize(text));
                 return null;
             }
 
             var parsed = JsonSerializer.Deserialize<RouteJson>(json, JsonOptions);
             if (parsed is null)
             {
-                _logger.LogWarning("路由 LLM JSON 解析失败（model={Model}）: {Json}", routerModel, json);
+                _logger.LogWarning("路由 LLM JSON 解析失败（model={Model}）: {Json}", routerModel, LogSanitizer.Sanitize(json));
                 return null;
             }
 
@@ -114,7 +115,7 @@ public sealed class SemanticRouter : IAgentSemanticRouter
 
             if (route is null)
             {
-                _logger.LogWarning("路由 LLM 返回未知 route（model={Model}）: {Json}", routerModel, json);
+                _logger.LogWarning("路由 LLM 返回未知 route（model={Model}）: {Json}", routerModel, LogSanitizer.Sanitize(json));
                 return null;
             }
 
@@ -211,4 +212,3 @@ public sealed class SemanticRouter : IAgentSemanticRouter
         public string? Reason { get; set; }
     }
 }
-

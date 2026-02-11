@@ -222,7 +222,7 @@ onMounted(() => {
               <span></span>
             </div>
             <template v-else>
-              <div class="message-text" v-html="message.content.replace(/\n/g, '<br>')"></div>
+              <div class="message-text">{{ message.content }}</div>
             </template>
           </div>
         </div>
@@ -516,7 +516,8 @@ $border-color: rgba(212, 175, 55, 0.2);
         word-break: break-word;
         font-size: 14px;
         letter-spacing: 0.3px;
-        display: inline;
+        display: block;
+        white-space: pre-wrap;
       }
     }
   }
