@@ -1,0 +1,84 @@
+name: Bug 报告
+description: 报告可复现的问题，帮助我们快速定位与修复
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你的反馈！提交前请确认已搜索过已有 Issue，避免重复。
+
+        安全漏洞请不要发公开 Issue，请按 https://github.com/Ichi-Studio/Hrevolve/blob/main/.github/SECURITY.md 进行私密披露。
+  - type: checkboxes
+    attributes:
+      label: 复现性确认
+      options:
+        - label: 我已搜索过现有 Issue，未发现重复
+          required: true
+        - label: 该问题可稳定复现
+          required: true
+  - type: dropdown
+    attributes:
+      label: 影响范围
+      options:
+        - 后端 API
+        - 前端 UI
+        - 部署/容器
+        - 文档
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 问题描述
+      description: 简要说明你遇到的问题与影响
+      placeholder: 例如：员工列表页加载失败并提示 500，影响无法查看员工信息。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 复现步骤
+      description: 请用最少步骤描述如何复现
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 期望结果
+      placeholder: 例如：页面正常展示员工列表并可分页。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 实际结果
+      placeholder: 例如：页面空白，控制台报错 xxx。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 日志 / 截图 / 录屏
+      description: 请粘贴相关日志（建议脱敏），或提供截图/录屏
+      placeholder: |
+        - 后端日志（脱敏）：
+        - 前端控制台：
+        - 网络请求（HAR/截图）：
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 环境信息
+      description: 请尽量填写完整，便于定位
+      value: |
+        - OS：
+        - 浏览器（如适用）：
+        - .NET SDK（如适用）：
+        - Node.js（如适用）：
+        - 数据库/Redis（本地 or 容器）：
+        - 部署方式（本地 / Docker / 其他）：
+    validations:
+      required: false
+

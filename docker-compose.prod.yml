@@ -21,7 +21,7 @@ services:
       - "${OLLAMA_PORT:-11434}:11434"
 
   api:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE}/hrevolve-api:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:?请在 .env 里设置 IMAGE_NAMESPACE（必须小写）}/hrevolve-api:${IMAGE_TAG:-latest}
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       Kestrel__BindAnyIP: "true"
@@ -42,7 +42,7 @@ services:
       - ollama
 
   web:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE}/hrevolve-web:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:?请在 .env 里设置 IMAGE_NAMESPACE（必须小写）}/hrevolve-web:${IMAGE_TAG:-latest}
     depends_on:
       - api
     ports:

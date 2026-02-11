@@ -1,0 +1,32 @@
+name: 文档改进
+description: 报告文档问题或提出文档改进建议
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: checkboxes
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索过现有 Issue / PR，未发现重复
+          required: true
+  - type: input
+    attributes:
+      label: 相关文档位置
+      description: 粘贴链接或文件路径
+      placeholder: 例如：README.md / Backend/README.md / https://...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 问题描述
+      description: 哪些内容不准确/不清晰/缺失？
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 建议修改
+      description: 你希望怎么改？可以直接给出草案文本
+    validations:
+      required: false
+

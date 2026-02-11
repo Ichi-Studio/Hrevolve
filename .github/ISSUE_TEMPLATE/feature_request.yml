@@ -1,0 +1,55 @@
+name: 功能需求
+description: 提交新功能/改进建议
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你的建议！请尽量从业务价值与使用场景出发描述需求。
+  - type: checkboxes
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索过现有 Issue / PR，未发现重复
+          required: true
+  - type: textarea
+    attributes:
+      label: 背景与问题
+      description: 现在的痛点是什么？谁会受益？
+      placeholder: 例如：审批流无法配置并行节点，导致实际业务无法落地。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 期望方案
+      description: 你希望如何解决？可以用要点描述
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 替代方案
+      description: 是否有可选方案或折中方案？
+      placeholder: |
+        - 方案 A：...
+        - 方案 B：...
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 影响范围与风险
+      description: 会影响哪些模块/接口/数据结构？是否需要迁移？
+      placeholder: 例如：影响后端 Leave 模块与前端审批页；需数据库迁移新增字段。
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 补充信息
+      description: 参考资料、截图、竞品对比、接口草案等
+    validations:
+      required: false
+
