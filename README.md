@@ -14,11 +14,25 @@
 
 ---
 
-## 📖 项目简介
+## 项目简介
 
 Hrevolve 是一个面向现代企业的 SaaS 人力资源管理平台，采用 **Clean Architecture + DDD（领域驱动设计）** 构建。系统深度融合 AI 能力，致力于从传统的"管理工具"转变为"员工服务平台"和"企业战略决策引擎"。
 
-## � 在线演示
+## 📚 目录
+
+- [在线演示](#demo)
+- [界面截图](#screenshots)
+- [系统架构](#architecture)
+- [技术栈](#tech-stack)
+- [核心功能](#features)
+- [使用手册](#manual)
+- [项目结构](#structure)
+- [快速开始](#quickstart)
+- [文档](#docs)
+- [许可证](#license)
+
+<a id="demo"></a>
+## 🌐 在线演示
 
 - 演示地址：http://8.138.89.167:8080/
 - 演示账号（默认已开启演示数据）
@@ -26,6 +40,7 @@ Hrevolve 是一个面向现代企业的 SaaS 人力资源管理平台，采用 *
   - HR：`demo_hr / demo123`
   - 员工：`demo_user / demo123`
 
+<a id="screenshots"></a>
 ## 🖼️ 界面截图
 
 <p align="center">
@@ -37,7 +52,8 @@ Hrevolve 是一个面向现代企业的 SaaS 人力资源管理平台，采用 *
   <img src="docs/screenshots/assistant.png" width="49%" alt="AI 助手" />
 </p>
 
-## �️ 系统架构
+<a id="architecture"></a>
+## 🏗️ 系统架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -63,6 +79,7 @@ Hrevolve 是一个面向现代企业的 SaaS 人力资源管理平台，采用 *
 └─────────────────────────────────────────────────────────────┘
 ```
 
+<a id="tech-stack"></a>
 ## 🛠️ 技术栈
 
 | 层级 | 技术选型 |
@@ -78,6 +95,7 @@ Hrevolve 是一个面向现代企业的 SaaS 人力资源管理平台，采用 *
 | **日志** | Serilog |
 | **API 文档** | Swagger / OpenAPI |
 
+<a id="features"></a>
 ## ✨ 核心功能
 
 ### 基础模块
@@ -102,7 +120,8 @@ Hrevolve 是一个面向现代企业的 SaaS 人力资源管理平台，采用 *
 - 🔑 Per-Tenant Key 敏感数据加密
 - 🏠 支持独立数据库部署（高安全场景）
 
-## � 使用手册
+<a id="manual"></a>
+## 📘 使用手册
 
 ### 1) 登录与角色
 
@@ -159,7 +178,8 @@ Hrevolve 是一个面向现代企业的 SaaS 人力资源管理平台，采用 *
 - 数据为空：确认是否开启演示数据种子（Docker 默认 `SEED_DEMO=true`）。
 - 多租户接入：后端支持通过 `X-Tenant-Id`、子域名或 `?tenant=` 识别租户（详见后端文档）。
 
-## �� 项目结构
+<a id="structure"></a>
+## 🧩 项目结构
 
 ```
 Hrevolve/
@@ -177,6 +197,7 @@ Hrevolve/
     └── *.drawio                  # 架构图
 ```
 
+<a id="quickstart"></a>
 ## 🚀 快速开始
 
 ### Docker 一键启动（推荐）
@@ -242,6 +263,7 @@ npm run build
 - API 文档：`https://localhost:5001/swagger`
 - 前端应用：`http://localhost:5173`
 
+<a id="docs"></a>
 ## 📚 文档
 
 - [Docker 部署](DEPLOYMENT.md)
@@ -250,6 +272,7 @@ npm run build
 - [需求规格说明](Design/RequirementsDocument.md)
 - [AI 助手设计](Design/Agent.md)
 
+<a id="license"></a>
 ## 📄 许可证
 
 [MIT License](LICENSE)
