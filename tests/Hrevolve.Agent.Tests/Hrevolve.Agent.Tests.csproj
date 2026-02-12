@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hrevolve.Agent\Hrevolve.Agent.csproj" />
+    <ProjectReference Include="..\..\Backend\Hrevolve.Agent\Hrevolve.Agent.csproj" />
   </ItemGroup>
 
 </Project>
